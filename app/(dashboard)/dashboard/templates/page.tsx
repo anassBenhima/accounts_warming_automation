@@ -201,43 +201,43 @@ export default function TemplatesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Templates</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Templates</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
             Manage image templates with watermarks, logos, and overlays
           </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg text-sm md:text-base w-full md:w-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 md:w-5 md:h-5" />
           Add Template
         </button>
       </div>
 
       {templates.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">
+        <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12 text-center">
+          <p className="text-sm md:text-base text-gray-500">
             No templates found. Add your first template to get started.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {templates.map((template) => (
             <div
               key={template.id}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all"
             >
               {/* Preview */}
-              <div className="bg-gray-100 h-48 flex items-center justify-center relative">
+              <div className="bg-gray-100 h-40 md:h-48 flex items-center justify-center relative">
                 {template.filePath && (
                   <Image
                     src={template.filePath}
                     alt={template.name}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-3 md:p-4"
                   />
                 )}
                 {template.type === 'TEXT' && (
@@ -247,7 +247,7 @@ export default function TemplatesPage() {
                       color: template.fontColor || '#000000',
                       fontFamily: template.fontFamily || 'Arial',
                     }}
-                    className="text-center px-4"
+                    className="text-center px-3 md:px-4 text-xs md:text-sm"
                   >
                     {template.textContent || 'Sample Text'}
                   </div>
@@ -261,7 +261,7 @@ export default function TemplatesPage() {
                         fontSize: `${template.fontSize || 8}%`,
                         fontFamily: template.fontFamily || 'Arial',
                       }}
-                      className="w-full text-center px-4 py-2"
+                      className="w-full text-center px-3 md:px-4 py-2 text-xs md:text-sm"
                     >
                       {template.textContent || 'Sample Text with Background'}
                     </div>
@@ -270,14 +270,14 @@ export default function TemplatesPage() {
               </div>
 
               {/* Content */}
-              <div className="p-4">
+              <div className="p-3 md:p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900 flex-1">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900 flex-1 truncate">
                     {template.name}
                   </h3>
                   <button
                     onClick={() => toggleActive(template.id, template.isActive)}
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                       template.isActive
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
@@ -288,14 +288,14 @@ export default function TemplatesPage() {
                 </div>
 
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                  className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(
                     template.type
-                  )} mb-3`}
+                  )} mb-2 md:mb-3`}
                 >
                   {getTypeLabel(template.type)}
                 </span>
 
-                <div className="text-xs text-gray-500 space-y-1 mb-4">
+                <div className="text-xs text-gray-500 space-y-1 mb-3 md:mb-4">
                   {template.positionX !== null && (
                     <p>Position: {template.positionX}%, {template.positionY}%</p>
                   )}
@@ -324,8 +324,8 @@ export default function TemplatesPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="bg-white rounded-xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
               Add New Template
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -471,7 +471,7 @@ export default function TemplatesPage() {
                 </>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Position X (%)
@@ -511,7 +511,7 @@ export default function TemplatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Width (%)
@@ -571,17 +571,17 @@ export default function TemplatesPage() {
                 />
               </div>
 
-              <div className="flex gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-sm md:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all text-sm md:text-base"
                 >
                   Create Template
                 </button>

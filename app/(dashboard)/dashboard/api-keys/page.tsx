@@ -165,10 +165,10 @@ export default function ApiKeysPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">API Keys</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">API Keys</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
             Manage your API keys for image generation and keyword search
           </p>
         </div>
@@ -178,32 +178,32 @@ export default function ApiKeysPage() {
             setFormData({ name: '', type: 'seedream', apiKey: '', modelName: '' });
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg text-sm md:text-base w-full md:w-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 md:w-5 md:h-5" />
           Add API Key
         </button>
       </div>
 
       {apiKeys.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">No API keys found. Add your first API key to get started.</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12 text-center">
+          <p className="text-sm md:text-base text-gray-500">No API keys found. Add your first API key to get started.</p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 md:gap-4">
           {apiKeys.map((key) => (
             <div
               key={key.id}
-              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all"
+              className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-all"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 truncate">
                       {key.name}
                     </h3>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                      className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(
                         key.type
                       )}`}
                     >
@@ -211,7 +211,7 @@ export default function ApiKeysPage() {
                     </span>
                     <button
                       onClick={() => toggleActive(key.id, key.isActive)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
                         key.isActive
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
@@ -221,12 +221,12 @@ export default function ApiKeysPage() {
                     </button>
                   </div>
                   {key.modelName && (
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-xs md:text-sm text-gray-600 mb-2">
                       Model: {key.modelName}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <p className="text-xs text-gray-500 font-mono">
+                  <div className="flex items-center gap-2 mt-2 overflow-x-auto">
+                    <p className="text-xs text-gray-500 font-mono break-all">
                       {visibleKeys[key.id] ? visibleKeys[key.id] : '••••••••••••••••'}
                     </p>
                   </div>
@@ -234,16 +234,16 @@ export default function ApiKeysPage() {
                     Created {new Date(key.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex md:flex-col lg:flex-row items-center gap-2 justify-end">
                   <button
                     onClick={() => toggleShowKey(key.id)}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                     title={visibleKeys[key.id] ? 'Hide API Key' : 'Show API Key'}
                   >
                     {visibleKeys[key.id] ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 md:w-5 md:h-5" />
                     )}
                   </button>
                   <button
@@ -251,14 +251,14 @@ export default function ApiKeysPage() {
                     className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
                     title="Edit API Key"
                   >
-                    <Edit2 className="w-5 h-5" />
+                    <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                   <button
                     onClick={() => setDeleteConfirm({ isOpen: true, id: key.id })}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete API Key"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
               </div>
@@ -269,9 +269,9 @@ export default function ApiKeysPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 md:p-8 max-w-md w-full">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
               {editingId ? 'Edit API Key' : 'Add New API Key'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -339,20 +339,20 @@ export default function ApiKeysPage() {
                 />
               </div>
 
-              <div className="flex gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingId(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-sm md:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all text-sm md:text-base"
                 >
                   {editingId ? 'Update Key' : 'Add Key'}
                 </button>

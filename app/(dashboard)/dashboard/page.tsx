@@ -51,38 +51,38 @@ const quickLinks = [
 export default function DashboardPage() {
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
-        <p className="text-gray-600">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
+        <p className="text-sm md:text-base text-gray-600">
           Manage your Pinterest image automation workflow
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl transition-all duration-300"
+              className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-xl transition-all duration-300"
             >
               <div
-                className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${link.color} opacity-10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-300`}
+                className={`absolute top-0 right-0 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br ${link.color} opacity-10 rounded-full -mr-12 md:-mr-16 -mt-12 md:-mt-16 group-hover:scale-150 transition-transform duration-300`}
               />
 
               <div className="relative">
                 <div
-                  className={`w-12 h-12 bg-gradient-to-br ${link.color} rounded-lg flex items-center justify-center mb-4`}
+                  className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br ${link.color} rounded-lg flex items-center justify-center mb-3 md:mb-4`}
                 >
-                  <Icon className="w-6 h-6 text-white" />
+                  <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1 md:mb-2">
                   {link.title}
                 </h3>
 
-                <p className="text-sm text-gray-600">{link.description}</p>
+                <p className="text-xs md:text-sm text-gray-600">{link.description}</p>
               </div>
             </Link>
           );

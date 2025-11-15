@@ -146,76 +146,76 @@ export default function HistoryPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Generation History</h1>
-          <p className="text-gray-600 mt-1">View and manage your generated Pinterest pins</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Generation History</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">View and manage your generated Pinterest pins</p>
         </div>
         <button
           onClick={fetchGenerations}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-900"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-900 text-sm md:text-base w-full md:w-auto"
         >
-          <RefreshCw className="w-5 h-5" />
+          <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
           Refresh
         </button>
       </div>
 
       {generations.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">
+        <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12 text-center">
+          <p className="text-sm md:text-base text-gray-500">
             No generations yet. Start your first generation process!
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {generations.map((generation) => (
             <div
               key={generation.id}
-              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all"
+              className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-all"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900">
                       Generation {new Date(generation.createdAt).toLocaleDateString()}
                     </h3>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                      className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                         generation.status
                       )}`}
                     >
                       {generation.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs md:text-sm text-gray-600">
                     Quantity: {generation.quantity} pins
                   </p>
                   <p className="text-xs text-gray-500">
                     Created: {new Date(generation.createdAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleDownloadZip(generation.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-all"
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-all text-xs md:text-sm"
                     title="Download all pins as ZIP"
                   >
-                    <FileArchive className="w-4 h-4" />
+                    <FileArchive className="w-3 h-3 md:w-4 md:h-4" />
                     ZIP
                   </button>
                   <button
                     onClick={() => handleExportCsv(generation.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-all"
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-all text-xs md:text-sm"
                     title="Export as Pinterest CSV"
                   >
-                    <FileSpreadsheet className="w-4 h-4" />
+                    <FileSpreadsheet className="w-3 h-3 md:w-4 md:h-4" />
                     CSV
                   </button>
                   <button
                     onClick={() => setSelectedGeneration(generation)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all"
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all text-xs md:text-sm"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3 h-3 md:w-4 md:h-4" />
                     View
                   </button>
                 </div>
@@ -223,10 +223,10 @@ export default function HistoryPage() {
 
               {generation.generatedImages.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <p className="text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Generated Images ({generation.generatedImages.length})
                   </p>
-                  <div className="grid grid-cols-6 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                     {generation.generatedImages.slice(0, 6).map((image) => (
                       <div
                         key={image.id}
@@ -262,31 +262,31 @@ export default function HistoryPage() {
           onClick={() => setSelectedGeneration(null)}
         >
           <div
-            className="bg-white rounded-xl p-8 max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl p-4 md:p-6 lg:p-8 max-w-6xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                 Generation Details
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
                 <button
                   onClick={() => handleDownloadZip(selectedGeneration.id)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all text-xs md:text-sm"
                 >
-                  <FileArchive className="w-4 h-4" />
-                  Download ZIP
+                  <FileArchive className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Download</span> ZIP
                 </button>
                 <button
                   onClick={() => handleExportCsv(selectedGeneration.id)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-xs md:text-sm"
                 >
-                  <FileSpreadsheet className="w-4 h-4" />
-                  Export CSV
+                  <FileSpreadsheet className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Export</span> CSV
                 </button>
                 <button
                   onClick={() => setSelectedGeneration(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  className="text-gray-500 hover:text-gray-700 text-xl md:text-2xl font-bold p-2"
                 >
                   ✕
                 </button>
@@ -294,17 +294,17 @@ export default function HistoryPage() {
             </div>
 
             {selectedGeneration.imageDescription && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">
+              <div className="mb-4 md:mb-6 p-3 md:p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 mb-2">
                   Image Description
                 </h3>
-                <p className="text-sm text-gray-700">
+                <p className="text-xs md:text-sm text-gray-700">
                   {selectedGeneration.imageDescription}
                 </p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {selectedGeneration.generatedImages.map((image) => (
                 <div
                   key={image.id}
@@ -320,11 +320,11 @@ export default function HistoryPage() {
                       />
                     </div>
                   )}
-                  <div className="p-4">
-                    <h4 className="font-semibold text-gray-900 mb-2">
+                  <div className="p-3 md:p-4">
+                    <h4 className="text-sm md:text-base font-semibold text-gray-900 mb-2">
                       {image.title}
                     </h4>
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-xs md:text-sm text-gray-600 mb-3">
                       {image.description}
                     </p>
                     <div className="flex flex-wrap gap-1 mb-3">
@@ -343,7 +343,7 @@ export default function HistoryPage() {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Change Template
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <select
                           value={selectedTemplates[image.id] || image.templateId || ''}
                           onChange={(e) =>
@@ -352,7 +352,7 @@ export default function HistoryPage() {
                               [image.id]: e.target.value,
                             })
                           }
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           disabled={changingTemplate[image.id]}
                         >
                           <option value="">Select a template</option>
@@ -374,16 +374,16 @@ export default function HistoryPage() {
                             !selectedTemplates[image.id] ||
                             selectedTemplates[image.id] === image.templateId
                           }
-                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+                          className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap"
                         >
                           {changingTemplate[image.id] ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              Saving...
+                              <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span className="hidden sm:inline">Saving...</span>
                             </>
                           ) : (
                             <>
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-3 h-3 md:w-4 md:h-4" />
                               Apply
                             </>
                           )}
@@ -394,9 +394,9 @@ export default function HistoryPage() {
                     <a
                       href={image.finalPath}
                       download
-                      className="mt-2 flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                      className="mt-2 flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-xs md:text-sm"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3 h-3 md:w-4 md:h-4" />
                       Download
                     </a>
                   </div>

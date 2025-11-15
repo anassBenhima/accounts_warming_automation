@@ -161,17 +161,17 @@ export default function NewGenerationPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           New Generation Process
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm md:text-base text-gray-600">
           Create automated Pinterest pins with AI-generated images and content
         </p>
       </div>
 
       {/* Progress Steps */}
-      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+      <div className="flex items-center justify-start md:justify-between mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => (
           <div key={s} className="flex items-center">
             <div className="flex flex-col items-center min-w-max">
@@ -203,11 +203,11 @@ export default function NewGenerationPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-8">
+      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 lg:p-8">
         {/* Step 1: Image Generation API Key */}
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 1: Select Image Generation API Key
             </h2>
             <select
@@ -236,7 +236,7 @@ export default function NewGenerationPage() {
                       key={model}
                       type="button"
                       onClick={() => setFormData({ ...formData, imageGenModel: model })}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
                         formData.imageGenModel === model
                           ? 'bg-purple-600 text-white'
                           : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
@@ -287,7 +287,7 @@ export default function NewGenerationPage() {
             <button
               onClick={() => setStep(2)}
               disabled={!formData.imageGenApiKeyId || !formData.imageGenModel}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
             >
               Next Step
             </button>
@@ -297,7 +297,7 @@ export default function NewGenerationPage() {
         {/* Step 2: Keyword Search API Key */}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 2: Select Keyword Search API Key
             </h2>
             <select
@@ -315,17 +315,17 @@ export default function NewGenerationPage() {
               ))}
             </select>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(3)}
                 disabled={!formData.keywordSearchApiKeyId}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -336,7 +336,7 @@ export default function NewGenerationPage() {
         {/* Step 3: Quantity */}
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 3: Set Quantity of Posts
             </h2>
             <div>
@@ -446,17 +446,17 @@ export default function NewGenerationPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(2)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(4)}
                 disabled={formData.quantity < 1}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -467,7 +467,7 @@ export default function NewGenerationPage() {
         {/* Step 4: Upload Image & Keywords */}
         {step === 4 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 4: Upload Image & Add Keywords
             </h2>
             <div>
@@ -516,17 +516,17 @@ export default function NewGenerationPage() {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(3)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(5)}
                 disabled={!formData.uploadedImagePath}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -537,7 +537,7 @@ export default function NewGenerationPage() {
         {/* Step 5: Image Description Prompt */}
         {step === 5 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 5: Select Image Description Prompt
             </h2>
             <select
@@ -555,17 +555,17 @@ export default function NewGenerationPage() {
               ))}
             </select>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(4)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(6)}
                 disabled={!formData.imageToPromptId}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -576,7 +576,7 @@ export default function NewGenerationPage() {
         {/* Step 6: Image Generation Prompt */}
         {step === 6 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 6: Select Image Generation Prompt
             </h2>
             <select
@@ -594,17 +594,17 @@ export default function NewGenerationPage() {
               ))}
             </select>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(5)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(7)}
                 disabled={!formData.imageGenerationPromptId}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -615,7 +615,7 @@ export default function NewGenerationPage() {
         {/* Step 7: Keyword Search Prompt */}
         {step === 7 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 7: Select Keyword Search Prompt
             </h2>
             <select
@@ -633,17 +633,17 @@ export default function NewGenerationPage() {
               ))}
             </select>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(6)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(8)}
                 disabled={!formData.keywordSearchPromptId}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -654,7 +654,7 @@ export default function NewGenerationPage() {
         {/* Step 8: Image Description API Key */}
         {step === 8 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 8: Set Image Description API
             </h2>
             <select
@@ -719,17 +719,17 @@ export default function NewGenerationPage() {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(7)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep(9)}
                 disabled={!formData.imageDescApiKeyId || !formData.imageDescModel}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm md:text-base"
               >
                 Next Step
               </button>
@@ -740,7 +740,7 @@ export default function NewGenerationPage() {
         {/* Step 9: Select Templates */}
         {step === 9 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
               Step 9: Select Templates
             </h2>
             <p className="text-gray-600 mb-4">
@@ -748,23 +748,23 @@ export default function NewGenerationPage() {
             </p>
 
             {activeTemplates.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-sm md:text-base text-gray-500">
                 No active templates found. Please create templates first.
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-h-96 overflow-y-auto">
                 {activeTemplates.map((template) => (
                   <div
                     key={template.id}
                     onClick={() => toggleTemplate(template.id)}
-                    className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
+                    className={`cursor-pointer border-2 rounded-lg p-3 md:p-4 transition-all ${
                       selectedTemplates.includes(template.id)
                         ? 'border-blue-600 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     {template.filePath && (
-                      <div className="relative h-24 bg-gray-100 rounded mb-2">
+                      <div className="relative h-20 md:h-24 bg-gray-100 rounded mb-2">
                         <Image
                           src={template.filePath}
                           alt={template.name}
@@ -773,26 +773,26 @@ export default function NewGenerationPage() {
                         />
                       </div>
                     )}
-                    <h3 className="font-semibold text-sm">{template.name}</h3>
-                    <p className="text-xs text-gray-500">{template.type}</p>
+                    <h3 className="font-semibold text-xs md:text-sm truncate">{template.name}</h3>
+                    <p className="text-xs text-gray-500 truncate">{template.type}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
                 onClick={() => setStep(8)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
               >
                 Back
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading || selectedTemplates.length === 0}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                <Play className="w-5 h-5" />
+                <Play className="w-4 h-4 md:w-5 md:h-5" />
                 {loading ? 'Starting...' : 'Start Generation'}
               </button>
             </div>
