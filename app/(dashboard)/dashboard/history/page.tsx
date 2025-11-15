@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { RefreshCw, Download, Eye, FileArchive, FileSpreadsheet, Edit, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -41,6 +42,7 @@ interface Generation {
 }
 
 export default function HistoryPage() {
+  const searchParams = useSearchParams();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -63,6 +65,26 @@ export default function HistoryPage() {
 
     return () => clearInterval(refreshInterval);
   }, []);
+
+  // Handle notification redirect - show logs for specific generation
+  useEffect(() => {
+    const showGenerationId = searchParams.get('show');
+    if (showGenerationId && generations.length > 0 && !showLogs) {
+      // Find the generation
+      const generation = generations.find((g) => g.id === showGenerationId);
+      if (generation) {
+        // Automatically open logs for this generation
+        fetchLogsForGeneration(showGenerationId);
+        // Scroll to the generation
+        setTimeout(() => {
+          const element = document.getElementById(`generation-${showGenerationId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+      }
+    }
+  }, [searchParams, generations, showLogs]);
 
   const fetchGenerations = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -238,6 +260,7 @@ export default function HistoryPage() {
           {generations.map((generation) => (
             <div
               key={generation.id}
+              id={`generation-${generation.id}`}
               className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-all"
             >
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">

@@ -6,6 +6,7 @@ import { writeFile, readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { createUserLogger } from '@/lib/logger';
 import { falService } from '@/lib/fal';
+import { sendGenerationCompleteNotification, sendGenerationFailedNotification } from '@/lib/pushNotification';
 
 export async function processGeneration(generationId: string) {
   try {
@@ -175,15 +176,43 @@ export async function processGeneration(generationId: string) {
     });
 
     console.log('Generation completed successfully!');
+
+    // Send push notification
+    await sendGenerationCompleteNotification(
+      userId,
+      generationId,
+      generation.quantity
+    ).catch((error) => {
+      console.error('Failed to send push notification:', error);
+    });
   } catch (error) {
     console.error('Error in processGeneration:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // Get generation to get userId
+    const generation = await prisma.generation.findUnique({
+      where: { id: generationId },
+      select: { userId: true },
+    });
+
     await prisma.generation.update({
       where: { id: generationId },
       data: {
         status: 'FAILED',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
       },
     });
+
+    // Send failure notification
+    if (generation) {
+      await sendGenerationFailedNotification(
+        generation.userId,
+        generationId,
+        errorMessage
+      ).catch((err) => {
+        console.error('Failed to send failure notification:', err);
+      });
+    }
   }
 }
 
