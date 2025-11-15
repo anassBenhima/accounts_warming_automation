@@ -71,10 +71,13 @@ nano .env
 ```
 
 Required environment variables:
-- \`DATABASE_URL\` - PostgreSQL connection string
-- \`NEXTAUTH_URL\` - Your production domain URL
+- \`DATABASE_URL\` - PostgreSQL connection string (use \`postgres\` as hostname for Docker Compose)
+  - Example: \`postgresql://postgres:postgres@postgres:5432/pinterest_automation?schema=public\`
+- \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\`, \`POSTGRES_DB\` - Database credentials
+- \`NEXTAUTH_URL\` - Your production domain URL (e.g., \`https://warmingautomation.flexiglob.com\`)
 - \`NEXTAUTH_SECRET\` - Generate with: \`openssl rand -base64 32\`
-- API keys for your AI services (OpenAI, Deepseek, Seedream, etc.)
+- \`PORT\` - Application port (default: 3000)
+- API keys for your AI services (optional, can be added via UI)
 
 ### 2. Deploy
 
