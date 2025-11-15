@@ -19,6 +19,83 @@ async function main() {
 
   console.log('Admin user created:', admin);
 
+  // Create production API keys from environment variables (if provided)
+  const prodKeys = [];
+
+  if (process.env.PROD_SEEDREAM_API_KEY) {
+    const prodSeedreamKey = await prisma.apiKey.upsert({
+      where: { id: 'prod-seedream-key' },
+      update: {},
+      create: {
+        id: 'prod-seedream-key',
+        userId: admin.id,
+        name: 'Production Seedream',
+        type: 'seedream',
+        apiKey: process.env.PROD_SEEDREAM_API_KEY,
+        modelName: process.env.PROD_SEEDREAM_MODEL || 'seedream-4-0-250828',
+        isActive: true,
+      },
+    });
+    prodKeys.push({ type: 'Seedream', name: prodSeedreamKey.name });
+  }
+
+  if (process.env.PROD_DEEPSEEK_API_KEY) {
+    const prodDeepseekKey = await prisma.apiKey.upsert({
+      where: { id: 'prod-deepseek-key' },
+      update: {},
+      create: {
+        id: 'prod-deepseek-key',
+        userId: admin.id,
+        name: 'Production Deepseek',
+        type: 'deepseek',
+        apiKey: process.env.PROD_DEEPSEEK_API_KEY,
+        modelName: process.env.PROD_DEEPSEEK_MODEL || 'deepseek-chat',
+        isActive: true,
+      },
+    });
+    prodKeys.push({ type: 'Deepseek', name: prodDeepseekKey.name });
+  }
+
+  if (process.env.PROD_OPENAI_SEARCH_API_KEY) {
+    const prodOpenAISearchKey = await prisma.apiKey.upsert({
+      where: { id: 'prod-openai-search-key' },
+      update: {},
+      create: {
+        id: 'prod-openai-search-key',
+        userId: admin.id,
+        name: 'OpenAI search',
+        type: 'openai',
+        apiKey: process.env.PROD_OPENAI_SEARCH_API_KEY,
+        modelName: process.env.PROD_OPENAI_SEARCH_MODEL || 'gpt-4.1-2025-04-14',
+        isActive: true,
+      },
+    });
+    prodKeys.push({ type: 'OpenAI Search', name: prodOpenAISearchKey.name });
+  }
+
+  if (process.env.PROD_OPENAI_DESC_API_KEY) {
+    const prodOpenAIImageDescKey = await prisma.apiKey.upsert({
+      where: { id: 'prod-openai-desc-key' },
+      update: {},
+      create: {
+        id: 'prod-openai-desc-key',
+        userId: admin.id,
+        name: 'OpenAI image describer',
+        type: 'openai',
+        apiKey: process.env.PROD_OPENAI_DESC_API_KEY,
+        modelName: process.env.PROD_OPENAI_DESC_MODEL || 'gpt-4-vision-preview',
+        isActive: true,
+      },
+    });
+    prodKeys.push({ type: 'OpenAI Describer', name: prodOpenAIImageDescKey.name });
+  }
+
+  if (prodKeys.length > 0) {
+    console.log('Production API keys created:', prodKeys);
+  } else {
+    console.log('No production API keys configured (set PROD_*_API_KEY environment variables to add them)');
+  }
+
   // Create default Image to Prompt template
   const defaultImageToPrompt = await prisma.imageToPrompt.create({
     data: {

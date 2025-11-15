@@ -133,6 +133,7 @@ User (Admin Account)
 ## Technology Stack
 
 ### Frontend
+
 - **Next.js 15**: React framework with App Router
 - **TypeScript**: Type-safe development
 - **Tailwind CSS**: Utility-first styling
@@ -140,18 +141,21 @@ User (Admin Account)
 - **React Hook Form**: Form management
 
 ### Backend
+
 - **Next.js API Routes**: Server-side endpoints
 - **NextAuth.js**: Authentication
 - **Prisma ORM**: Type-safe database access
 - **PostgreSQL**: Relational database
 
 ### AI & Image Processing
+
 - **Seedream AI**: Image generation
 - **OpenAI GPT-4**: Vision & keyword analysis
 - **Deepseek**: Alternative LLM for cost optimization
 - **Sharp**: High-performance image processing
 
 ### Infrastructure
+
 - **Docker**: Containerization
 - **Docker Compose**: Multi-container orchestration
 - **Node.js 20**: Runtime environment
@@ -171,11 +175,13 @@ User (Admin Account)
 ### Installation Steps
 
 1. **Clone & Navigate**
+
    ```bash
    cd images_automation
    ```
 
 2. **Configure Environment** (Optional - defaults provided)
+
    ```bash
    # .env file is pre-configured with defaults
    # Update NEXTAUTH_SECRET for production:
@@ -183,17 +189,20 @@ User (Admin Account)
    ```
 
 3. **Launch Platform**
+
    ```bash
    docker-compose up --build
    ```
 
    This will:
+
    - Build the Next.js application
    - Start PostgreSQL database (internal network)
    - Run database migrations
    - Launch the platform on port 3333
 
 4. **Access Dashboard**
+
    - URL: http://localhost:3333
    - Username: `admin@gmail.com`
    - Password: `admin@123@blogging`
@@ -234,6 +243,7 @@ Access at: http://localhost:3333
 **Purpose**: Central hub for quick access to all features
 
 **Features**:
+
 - Quick navigation cards to all modules
 - Visual status indicators
 - Direct links to generation workflow
@@ -247,17 +257,20 @@ Access at: http://localhost:3333
 **Purpose**: Centralized credential management for AI services
 
 **Supported Services**:
+
 - **Seedream**: Image generation engine
 - **OpenAI**: GPT-4 Vision for image description, GPT-4 for keywords
 - **Deepseek**: Cost-effective alternative for keyword research
 
 **Features**:
+
 - Alias naming for easy identification
 - Model specification (e.g., `seedream-4-0-250828`, `gpt-4o`)
 - Active/Inactive toggle
 - Secure storage (keys encrypted in database)
 
 **Configuration Example**:
+
 ```
 Name: "Production Seedream"
 Type: Seedream
@@ -267,6 +280,7 @@ Status: Active
 ```
 
 **Best Practices**:
+
 - Use separate keys for testing vs. production
 - Rotate API keys quarterly for security
 - Monitor usage to avoid rate limits
@@ -279,11 +293,13 @@ Status: Active
 **Purpose**: Define how AI describes uploaded reference images
 
 **What It Does**:
+
 - Provides instructions for vision AI models
 - Extracts relevant details from reference images
 - Creates descriptive text for image generation
 
 **Default Prompt Template**:
+
 ```
 Describe this image in detail, focusing on:
 - Main subject and composition
@@ -294,12 +310,14 @@ Describe this image in detail, focusing on:
 ```
 
 **Customization Tips**:
+
 - Be specific about what details matter
 - Include industry-specific terminology
 - Focus on Pinterest-relevant aspects
 - Optimize for food photography specifics
 
 **Advanced Example**:
+
 ```
 As a food photography expert, analyze this image:
 1. Identify the dish and its key ingredients
@@ -319,11 +337,13 @@ Provide a concise, vivid description optimized for AI image generation.
 **Purpose**: Define the style and quality of AI-generated images
 
 **What It Does**:
+
 - Instructs Seedream AI on visual output
 - Ensures Pinterest-optimized aesthetics
 - Maintains consistency across generations
 
 **Default Prompt** (Pinterest Food Pin):
+
 ```
 Create a highly detailed and vivid image of a Pinterest-style food pin
 featuring the given recipe. The image should prominently display the
@@ -348,12 +368,14 @@ and appetizing mood.
 ```
 
 **Customization Ideas**:
+
 - **Lifestyle Pins**: Emphasize lifestyle context, real-life settings
 - **Minimal Aesthetic**: Focus on clean backgrounds, minimal props
 - **Seasonal Themes**: Add specific seasonal elements
 - **Diet-Specific**: Highlight keto, vegan, gluten-free elements
 
 **Tips for Better Results**:
+
 - Include specific lighting directions
 - Define composition rules (rule of thirds, etc.)
 - Specify color palettes
@@ -367,12 +389,14 @@ and appetizing mood.
 **Purpose**: Generate Pinterest-optimized keywords and SEO metadata
 
 **What It Does**:
+
 - Analyzes Pinterest trending topics
 - Generates keyword-optimized titles
 - Creates compelling descriptions
 - Identifies keyword clusters and intent phrases
 
 **Output Format** (JSON):
+
 ```json
 [
   {
@@ -391,6 +415,7 @@ and appetizing mood.
 ```
 
 **Default Prompt Strategy**:
+
 ```
 Act as a senior culinary trend analyst. Using the latest data from
 Google Trends, Pinterest trending topics, and other credible sources,
@@ -426,6 +451,7 @@ Keywords:
 ```
 
 **Keyword Cluster Options**:
+
 - Seasonal/Occasion (Christmas, Summer, Back-to-School)
 - Diet-Specific (Keto, Vegan, Gluten-Free, Low-Carb)
 - Time-Saving (30-minute, One-Pot, No-Bake, Instant Pot)
@@ -434,6 +460,7 @@ Keywords:
 - Meal-Prep (Batch Cooking, Freezer-Friendly, Lunch Ideas)
 
 **Intent Phrase Patterns**:
+
 - "how to make..."
 - "easy..."
 - "quick..."
@@ -452,16 +479,19 @@ Keywords:
 **Template Types**:
 
 #### **A. Overlay Images**
+
 - **Use Case**: Add recipe card overlays, texture layers
 - **Settings**: Opacity (0.0 - 1.0), typically 0.1-0.3
 - **Example**: Semi-transparent recipe card with ingredients list
 
 #### **B. Watermarks**
+
 - **Use Case**: Protect content, subtle branding
 - **Settings**: Position (X%, Y%), Size (W%, H%), Opacity
 - **Example**: Small logo in bottom-right corner at 15% opacity
 
 #### **C. Logos**
+
 - **Use Case**: Brand identity, source attribution
 - **Settings**: Position, Size, Opacity
 - **Best Practices**:
@@ -470,11 +500,13 @@ Keywords:
   - Use PNG with transparency
 
 #### **D. Text Overlays**
+
 - **Use Case**: Recipe names, CTAs, promotional text
 - **Settings**: Content, Font size, Color, Font family, Position
 - **Example**: "30-Minute Dinner" in bold white text, centered top
 
 **Template Configuration Tips**:
+
 - Create 3-5 template variations for diversity
 - Use consistent branding elements
 - Test opacity levels for readability
@@ -482,6 +514,7 @@ Keywords:
 - Save successful templates for reuse
 
 **Position Guidelines**:
+
 ```
 Top-Left (10%, 10%): Logo/Branding
 Top-Center (50%, 15%): Recipe Name
@@ -494,10 +527,12 @@ Bottom-Right (90%, 85%): Watermark
 **Real-World Example Templates**:
 
 1. **Minimal Branding**
+
    - Logo: Bottom-right, 8% size, 30% opacity
    - Text: None
 
 2. **Recipe Card Overlay**
+
    - Overlay: Top-center, 40% width, 0.15 opacity
    - Text: Recipe name, centered, white
    - Logo: Bottom-right, small
@@ -516,20 +551,24 @@ Bottom-Right (90%, 85%): Watermark
 **9-Step Workflow**:
 
 #### **Step 1: Select Image Generation API**
+
 - Choose your Seedream API key
 - Input model name (e.g., `seedream-4-0-250828`)
 - **Tip**: Use production keys for client work
 
 #### **Step 2: Select Keyword Search API**
+
 - Choose OpenAI or Deepseek key
 - **Cost Optimization**: Use Deepseek for bulk operations
 
 #### **Step 3: Set Quantity**
+
 - Number of unique pins to generate (1-100)
 - **Use Case**: Set to number of Pinterest accounts
 - **Recommendation**: Start with 10 for testing
 
 #### **Step 4: Upload Reference Image**
+
 - Upload inspiration/reference image
 - Add optional manual keywords
 - **Best Practices**:
@@ -538,29 +577,35 @@ Bottom-Right (90%, 85%): Watermark
   - Add niche-specific keywords
 
 #### **Step 5: Select Image Description Prompt**
+
 - Choose how AI describes your reference
 - **Tip**: Use detailed prompts for complex images
 
 #### **Step 6: Select Image Generation Prompt**
+
 - Choose the style for new images
 - **Pinterest Food Pin** template recommended
 
 #### **Step 7: Select Keyword Search Prompt**
+
 - Choose keyword generation strategy
 - **Trending Recipes** template for food content
 
 #### **Step 8: Set Image Description API**
+
 - Choose API for vision analysis
 - Input model (e.g., `gpt-4o` for vision)
 - **Requirement**: Must support image inputs
 
 #### **Step 9: Select Templates**
+
 - Choose 1+ templates to apply
 - See preview of each template
 - **Diversity**: System randomly assigns templates
 - **Requirement**: At least one template required
 
 #### **Submit & Process**
+
 - Click "Start Generation"
 - System processes asynchronously
 - Check "History" for results
@@ -663,7 +708,9 @@ Generation Batch #123
 The platform provides two export formats for easy Pinterest integration:
 
 #### 1. ZIP Download
+
 Download all generated pins as a structured ZIP file with the following format:
+
 ```
 generation-{id}.zip
 ├── pin1/
@@ -676,6 +723,7 @@ generation-{id}.zip
 ```
 
 Each `data.json` contains:
+
 - `title`: Pin title
 - `description`: Pin description
 - `keywords`: Array of keywords
@@ -684,16 +732,18 @@ Each `data.json` contains:
 - `createdAt`: Creation timestamp
 
 #### 2. Pinterest CSV Export
+
 Export generation data in Pinterest's bulk upload format. The CSV file includes:
 
-| Column          | Description                                    |
-| --------------- | ---------------------------------------------- |
-| **Title**       | Pin title (up to 100 characters)               |
-| **Media URL**   | Publicly accessible direct link to the image   |
-| **Pinterest board** | Empty - to be filled by user               |
-| **Thumbnail**   | Blank (only for video pins)                    |
+| Column              | Description                                  |
+| ------------------- | -------------------------------------------- |
+| **Title**           | Pin title (up to 100 characters)             |
+| **Media URL**       | Publicly accessible direct link to the image |
+| **Pinterest board** | Empty - to be filled by user                 |
+| **Thumbnail**       | Blank (only for video pins)                  |
 
 **Important Notes:**
+
 - Media URLs are fully qualified and publicly accessible
 - The Pinterest board column is intentionally left empty for users to fill in later
 - The CSV format is compatible with Pinterest's bulk upload feature
@@ -715,6 +765,7 @@ Export generation data in Pinterest's bulk upload format. The CSV file includes:
 **Endpoint**: `https://ark.ap-southeast.bytepluses.com/api/v3/images/generations`
 
 **Configuration**:
+
 ```javascript
 {
   model: "seedream-4-0-250828",
@@ -729,18 +780,21 @@ Export generation data in Pinterest's bulk upload format. The CSV file includes:
 ```
 
 **Headers**:
+
 ```
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 ```
 
 **Best Practices**:
+
 - Use detailed prompts (200+ words) for best results
 - Specify lighting, composition, and mood
 - Include negative prompts if needed
 - Monitor API quotas
 
 **Pricing Considerations**:
+
 - Check current Seedream pricing
 - Estimate costs: ~$0.02-0.05 per image
 - Budget for 1000 images = $20-50
@@ -750,6 +804,7 @@ Content-Type: application/json
 ### OpenAI GPT-4 (Vision & Keywords)
 
 **Vision API**:
+
 ```javascript
 POST https://api.openai.com/v1/chat/completions
 {
@@ -767,6 +822,7 @@ POST https://api.openai.com/v1/chat/completions
 ```
 
 **Keyword Generation**:
+
 ```javascript
 POST https://api.openai.com/v1/chat/completions
 {
@@ -779,6 +835,7 @@ POST https://api.openai.com/v1/chat/completions
 ```
 
 **Cost Optimization**:
+
 - Vision: ~$0.01 per image analysis
 - Keywords: ~$0.001 per generation
 - Use caching for repeated prompts
@@ -790,6 +847,7 @@ POST https://api.openai.com/v1/chat/completions
 **Endpoint**: `https://api.deepseek.com/v1/chat/completions`
 
 **Configuration**:
+
 ```javascript
 {
   model: "deepseek-chat",
@@ -799,11 +857,13 @@ POST https://api.openai.com/v1/chat/completions
 ```
 
 **Advantages**:
+
 - 5-10x cheaper than OpenAI
 - Similar quality for keyword generation
 - Good for bulk operations
 
 **Limitations**:
+
 - No vision capabilities (use OpenAI for image description)
 - Slightly lower creativity in some cases
 
@@ -814,17 +874,20 @@ POST https://api.openai.com/v1/chat/completions
 ### Content Strategy
 
 1. **Reference Image Selection**
+
    - Use high-quality, professionally styled images
    - Match the aesthetic you want to replicate
    - Avoid copyrighted or watermarked images
 
 2. **Prompt Engineering**
+
    - Be specific and detailed
    - Include sensory details (textures, colors)
    - Define mood and atmosphere
    - Specify technical aspects (lighting, composition)
 
 3. **Keyword Research**
+
    - Focus on long-tail keywords (3-5 words)
    - Include seasonal trends
    - Mix high-volume and niche keywords
@@ -839,11 +902,13 @@ POST https://api.openai.com/v1/chat/completions
 ### Workflow Optimization
 
 1. **Batch Processing**
+
    - Generate 20-50 pins at once
    - Process during off-peak hours
    - Monitor API rate limits
 
 2. **Quality Control**
+
    - Review first 5 generated images
    - Adjust prompts if needed
    - Check metadata accuracy
@@ -858,12 +923,14 @@ POST https://api.openai.com/v1/chat/completions
 ### Pinterest-Specific Tips
 
 1. **Image Specifications**
+
    - Ideal size: 1000x1500px (2:3 ratio)
    - Current: 500x750px (adjust in Seedream config)
    - Format: PNG or JPEG
    - File size: < 10MB
 
 2. **SEO Optimization**
+
    - Front-load keywords in titles
    - Write for humans, not algorithms
    - Include call-to-action
@@ -882,6 +949,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Cost Reduction
 
 1. **API Usage**
+
    - Use Deepseek for keyword generation (cheaper)
    - Cache AI responses when possible
    - Batch API calls
@@ -896,6 +964,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Performance Tuning
 
 1. **Server Resources**
+
    - Allocate 2GB+ RAM for Docker
    - Use SSD storage for faster I/O
    - Enable image processing caching
@@ -910,6 +979,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Quality Improvements
 
 1. **Prompt Refinement**
+
    - Test different prompt variations
    - Analyze successful outputs
    - Document best-performing prompts
@@ -928,6 +998,7 @@ POST https://api.openai.com/v1/chat/completions
 ### API Key Security
 
 1. **Storage**
+
    - Keys encrypted in database
    - Never exposed in frontend
    - Environment variables for sensitive data
@@ -942,6 +1013,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Data Privacy
 
 1. **User Data**
+
    - Minimal data collection
    - No tracking or analytics
    - Local storage only
@@ -956,6 +1028,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Pinterest ToS Compliance
 
 1. **Content Guidelines**
+
    - Generate original content only
    - No misleading descriptions
    - Proper source attribution
@@ -970,6 +1043,7 @@ POST https://api.openai.com/v1/chat/completions
 ### Licensing
 
 1. **AI-Generated Content**
+
    - Review Seedream's commercial license
    - Understand usage rights
    - Check attribution requirements
@@ -1007,12 +1081,14 @@ POST https://api.openai.com/v1/chat/completions
 ### Security Configuration
 
 **Database Isolation**:
+
 - PostgreSQL runs on **internal Docker network only**
 - Port 5432 **NOT exposed** to host machine
 - Only Next.js app can access database
 - Reduced attack surface
 
 **Application Access**:
+
 - Frontend/Backend: **Port 3333** (external)
 - Internal port: 3000 (Docker internal)
 - Secure network communication
@@ -1020,11 +1096,13 @@ POST https://api.openai.com/v1/chat/completions
 ### Container Management
 
 **Start Services**:
+
 ```bash
 docker-compose up -d
 ```
 
 **View Logs**:
+
 ```bash
 # All services
 docker-compose logs -f
@@ -1035,16 +1113,19 @@ docker-compose logs -f postgres
 ```
 
 **Stop Services**:
+
 ```bash
 docker-compose down
 ```
 
 **Restart Services**:
+
 ```bash
 docker-compose restart
 ```
 
 **Rebuild After Code Changes**:
+
 ```bash
 docker-compose up --build
 ```
@@ -1052,17 +1133,21 @@ docker-compose up --build
 ### Database Access (Development)
 
 **Option 1: Prisma Studio** (Recommended)
+
 ```bash
 npx prisma studio
 ```
+
 Opens visual database browser at http://localhost:5555
 
 **Option 2: Direct psql Access**
+
 ```bash
 docker exec -it images-automation-db psql -U postgres -d images_automation
 ```
 
 **Option 3: Temporarily Expose Port**
+
 ```yaml
 # Add to docker-compose.yml temporarily
 postgres:
@@ -1073,11 +1158,13 @@ postgres:
 ### Backup & Restore
 
 **Backup Database**:
+
 ```bash
 docker exec images-automation-db pg_dump -U postgres images_automation > backup.sql
 ```
 
 **Restore Database**:
+
 ```bash
 cat backup.sql | docker exec -i images-automation-db psql -U postgres -d images_automation
 ```
@@ -1085,6 +1172,7 @@ cat backup.sql | docker exec -i images-automation-db psql -U postgres -d images_
 ### Production Deployment
 
 **Environment Variables**:
+
 ```bash
 # Update .env for production
 DATABASE_URL="postgresql://user:pass@prod-db:5432/db"
@@ -1093,6 +1181,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 ```
 
 **SSL/TLS**:
+
 ```bash
 # Add reverse proxy (nginx)
 # Configure Let's Encrypt
@@ -1100,6 +1189,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 ```
 
 **Scaling Considerations**:
+
 - Use managed PostgreSQL (AWS RDS, Digital Ocean)
 - Implement Redis caching
 - CDN for static assets
@@ -1116,6 +1206,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 **Symptoms**: Error message, no images generated
 
 **Solutions**:
+
 - Verify API keys are valid and active
 - Check API quotas/rate limits
 - Review prompt format
@@ -1127,6 +1218,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 **Symptoms**: Generated images don't match reference
 
 **Solutions**:
+
 - Refine image generation prompt
 - Use more detailed reference image
 - Adjust Seedream model parameters
@@ -1137,6 +1229,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 **Symptoms**: Final images missing watermarks/overlays
 
 **Solutions**:
+
 - Verify template is marked "Active"
 - Check file paths are correct
 - Ensure template images exist in `/public/uploads/`
@@ -1147,6 +1240,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 **Symptoms**: Generation takes 10+ minutes
 
 **Solutions**:
+
 - Reduce quantity of pins per batch
 - Check API response times
 - Allocate more RAM to Docker
@@ -1158,6 +1252,7 @@ NEXTAUTH_SECRET="strong-random-secret-change-this"
 **Symptoms**: "Failed to connect to database"
 
 **Solutions**:
+
 ```bash
 # Check if postgres is running
 docker ps
@@ -1174,6 +1269,7 @@ docker-compose restart postgres
 **Symptoms**: "Port already allocated"
 
 **Solutions**:
+
 ```bash
 # Find process using port 3333
 lsof -i :3333
@@ -1185,27 +1281,30 @@ ports:
 
 ### Error Messages Reference
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `ECONNREFUSED` | Database not accessible | Check postgres container status |
-| `Invalid API key` | Wrong/expired API key | Update API key in dashboard |
-| `Rate limit exceeded` | Too many API calls | Wait or upgrade API plan |
-| `File not found` | Missing template file | Re-upload template image |
-| `Out of memory` | Insufficient RAM | Increase Docker memory limit |
+| Error                 | Cause                   | Solution                        |
+| --------------------- | ----------------------- | ------------------------------- |
+| `ECONNREFUSED`        | Database not accessible | Check postgres container status |
+| `Invalid API key`     | Wrong/expired API key   | Update API key in dashboard     |
+| `Rate limit exceeded` | Too many API calls      | Wait or upgrade API plan        |
+| `File not found`      | Missing template file   | Re-upload template image        |
+| `Out of memory`       | Insufficient RAM        | Increase Docker memory limit    |
 
 ### Getting Help
 
 1. **Check Logs**:
+
    ```bash
    docker-compose logs --tail=100
    ```
 
 2. **Database Status**:
+
    ```bash
    docker exec images-automation-db pg_isready -U postgres
    ```
 
 3. **Application Health**:
+
    ```bash
    curl http://localhost:3333/api/health
    ```
@@ -1287,11 +1386,13 @@ docker-compose exec app npx prisma migrate deploy
 **License**: Private use only (not open source)
 
 **Support**:
+
 - Email: support@yourdomain.com
 - Documentation: This file
 - Issues: Create detailed bug reports
 
 **Updates**:
+
 - Check for platform updates monthly
 - Review API provider changelogs
 - Monitor Pinterest algorithm changes
@@ -1303,6 +1404,7 @@ docker-compose exec app npx prisma migrate deploy
 This Pinterest Content Generator Platform is a powerful micro-SaaS solution that automates the most time-consuming aspects of Pinterest marketing. By leveraging cutting-edge AI technologies and a streamlined workflow, you can scale your content creation while maintaining quality and brand consistency.
 
 **Key Takeaways**:
+
 - Automate repetitive content creation tasks
 - Maintain brand consistency with templates
 - Leverage AI for trending keyword research
@@ -1311,6 +1413,7 @@ This Pinterest Content Generator Platform is a powerful micro-SaaS solution that
 - Monitor and iterate based on performance
 
 **Getting Started Checklist**:
+
 - [ ] Launch Docker containers
 - [ ] Add API keys (Seedream + OpenAI/Deepseek)
 - [ ] Create 3-5 template variations
@@ -1322,6 +1425,7 @@ This Pinterest Content Generator Platform is a powerful micro-SaaS solution that
 - [ ] Iterate and optimize
 
 **Success Metrics to Track**:
+
 - Pins generated per week
 - Time saved vs. manual creation
 - Pinterest engagement rates

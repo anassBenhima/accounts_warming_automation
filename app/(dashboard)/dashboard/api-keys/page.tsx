@@ -16,6 +16,7 @@ export default function ApiKeysPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: 'seedream',
@@ -23,6 +24,7 @@ export default function ApiKeysPage() {
     modelName: '',
   });
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
+  const [visibleKeys, setVisibleKeys] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     fetchApiKeys();
@@ -44,19 +46,62 @@ export default function ApiKeysPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch('/api/api-keys', {
-        method: 'POST',
+      const url = editingId ? `/api/api-keys/${editingId}` : '/api/api-keys';
+      const method = editingId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         setShowModal(false);
+        setEditingId(null);
         setFormData({ name: '', type: 'seedream', apiKey: '', modelName: '' });
         fetchApiKeys();
       }
     } catch (error) {
-      console.error('Error creating API key:', error);
+      console.error('Error saving API key:', error);
+    }
+  };
+
+  const handleEdit = async (id: string) => {
+    // Fetch the full API key data including the actual key value
+    try {
+      const response = await fetch(`/api/api-keys/${id}`);
+      const data = await response.json();
+
+      setFormData({
+        name: data.name,
+        type: data.type,
+        apiKey: data.key || '',
+        modelName: data.modelName || '',
+      });
+      setEditingId(id);
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error fetching API key for edit:', error);
+    }
+  };
+
+  const toggleShowKey = async (id: string) => {
+    if (visibleKeys[id]) {
+      // Hide the key
+      setVisibleKeys(prev => {
+        const newKeys = { ...prev };
+        delete newKeys[id];
+        return newKeys;
+      });
+    } else {
+      // Fetch and show the key
+      try {
+        const response = await fetch(`/api/api-keys/${id}`);
+        const data = await response.json();
+        setVisibleKeys(prev => ({ ...prev, [id]: data.key }));
+      } catch (error) {
+        console.error('Error fetching API key:', error);
+      }
     }
   };
 
@@ -123,7 +168,11 @@ export default function ApiKeysPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setEditingId(null);
+            setFormData({ name: '', type: 'seedream', apiKey: '', modelName: '' });
+            setShowModal(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
         >
           <Plus className="w-5 h-5" />
@@ -171,14 +220,38 @@ export default function ApiKeysPage() {
                       Model: {key.modelName}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-xs text-gray-500 font-mono">
+                      {visibleKeys[key.id] ? visibleKeys[key.id] : '••••••••••••••••'}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
                     Created {new Date(key.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => toggleShowKey(key.id)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    title={visibleKeys[key.id] ? 'Hide API Key' : 'Show API Key'}
+                  >
+                    {visibleKeys[key.id] ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleEdit(key.id)}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                    title="Edit API Key"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button
                     onClick={() => handleDelete(key.id)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    title="Delete API Key"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -194,7 +267,7 @@ export default function ApiKeysPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Add New API Key
+              {editingId ? 'Edit API Key' : 'Add New API Key'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -264,7 +337,10 @@ export default function ApiKeysPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingId(null);
+                  }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
                 >
                   Cancel
@@ -273,7 +349,7 @@ export default function ApiKeysPage() {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
                 >
-                  Add Key
+                  {editingId ? 'Update Key' : 'Add Key'}
                 </button>
               </div>
             </form>

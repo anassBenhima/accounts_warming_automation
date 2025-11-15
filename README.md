@@ -12,8 +12,12 @@ Automated Pinterest pin generation system with AI-powered image generation, desc
 - **Batch Processing** - Generate multiple pins at once with customizable quantities
 - **Image Description** - Automatic Pinterest-friendly descriptions and titles
 - **CSV Export** - Export pins in Pinterest bulk upload format
-- **Template Management** - Create and manage reusable text/logo templates
+- **Template Management** - Create, edit, and manage reusable text/logo templates
+- **API Key Management** - Full CRUD operations for API keys with show/hide sensitive values
+- **Prompt Management** - Create and edit prompts for image descriptions, generation, and keyword search
+- **Model Presets** - Quick model selection for OpenAI (including gpt-4-vision-preview), Seedream, and Deepseek
 - **Generation History** - Track all your pin generations with preview and download
+- **Multi-User Support** - User authentication and isolated workspaces
 
 ## Tech Stack
 
@@ -54,9 +58,16 @@ Automated Pinterest pin generation system with AI-powered image generation, desc
    docker compose exec app npx prisma migrate dev
    ```
 
-5. **Access the application**
+5. **Seed the database**
+   ```bash
+   docker compose exec app npx prisma db seed
+   ```
+
+6. **Access the application**
    - Application: http://localhost:3333
-   - Default login: Configure your first user through the UI
+   - Default admin credentials:
+     - Email: `admin@gmail.com`
+     - Password: `admin@123@blogging`
 
 ## Production Deployment
 
@@ -76,8 +87,15 @@ Required environment variables:
 - \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\`, \`POSTGRES_DB\` - Database credentials
 - \`NEXTAUTH_URL\` - Your production domain URL (e.g., \`https://warmingautomation.flexiglob.com\`)
 - \`NEXTAUTH_SECRET\` - Generate with: \`openssl rand -base64 32\`
-- \`PORT\` - Application port (default: 3000)
-- API keys for your AI services (optional, can be added via UI)
+- \`PORT\` - Application port (default: 3333)
+
+Optional production API keys (will be seeded into database):
+- \`PROD_SEEDREAM_API_KEY\` / \`PROD_SEEDREAM_MODEL\` - Seedream image generation API
+- \`PROD_DEEPSEEK_API_KEY\` / \`PROD_DEEPSEEK_MODEL\` - Deepseek keyword search API
+- \`PROD_OPENAI_SEARCH_API_KEY\` / \`PROD_OPENAI_SEARCH_MODEL\` - OpenAI search API
+- \`PROD_OPENAI_DESC_API_KEY\` / \`PROD_OPENAI_DESC_MODEL\` - OpenAI image description API
+
+Note: API keys can also be added via the UI after deployment
 
 ### 2. Deploy
 
@@ -90,6 +108,7 @@ Run the automated deployment script:
 This script will:
 - Build Docker images
 - Run database migrations
+- Seed database with admin user and default prompts/API keys
 - Start containers
 - Verify application health
 

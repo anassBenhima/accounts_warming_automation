@@ -16,6 +16,7 @@ const MODEL_PRESETS = {
     'gpt-4o',
     'gpt-4o-mini',
     'gpt-4-turbo',
+    'gpt-4-vision-preview',
     'gpt-3.5-turbo',
   ],
   deepseek: [
