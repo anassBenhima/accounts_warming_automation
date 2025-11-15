@@ -2,6 +2,8 @@
 
 Automated Pinterest pin generation system with AI-powered image generation, description writing, and keyword optimization.
 
+**Live Production:** [https://warmingautomation.flexiglob.com](https://warmingautomation.flexiglob.com)
+
 ## Features
 
 - **AI Image Generation** - Generate Pinterest-optimized images using Seedream, OpenAI DALL-E, or other AI models
