@@ -46,12 +46,12 @@ Automated Pinterest pin generation system with AI-powered image generation, desc
 
 3. **Start with Docker Compose**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Run database migrations**
    ```bash
-   docker-compose exec app npx prisma migrate dev
+   docker compose exec app npx prisma migrate dev
    ```
 
 5. **Access the application**
@@ -96,13 +96,13 @@ Alternatively, deploy manually:
 
 ```bash
 # Build and start
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker compose.prod.yml up -d --build
 
 # Run migrations
-docker-compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker compose.prod.yml exec app npx prisma migrate deploy
 
 # Check status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 ```
 
 ## Production Health Check
@@ -114,39 +114,39 @@ The deployment script automatically checks application health. To manually verif
 curl http://localhost:3333
 
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f app
+docker compose -f docker compose.prod.yml logs -f app
 
 # Check container status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 ```
 
 ## Management Commands
 
 ```bash
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 
 # Restart application
-docker-compose -f docker-compose.prod.yml restart app
+docker compose -f docker compose.prod.yml restart app
 
 # Stop all services
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker compose.prod.yml down
 
 # Rebuild and restart
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker compose.prod.yml up -d --build
 ```
 
 ## Database Migrations
 
 ```bash
 # Development - Create and apply migration
-docker-compose exec app npx prisma migrate dev --name migration_name
+docker compose exec app npx prisma migrate dev --name migration_name
 
 # Production - Apply migrations
-docker-compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker compose.prod.yml exec app npx prisma migrate deploy
 
 # View migration status
-docker-compose exec app npx prisma migrate status
+docker compose exec app npx prisma migrate status
 ```
 
 ## Project Structure
@@ -166,8 +166,8 @@ docker-compose exec app npx prisma migrate status
 ├── public/                 # Static files
 │   ├── uploads/           # User uploaded images
 │   └── generated/         # Generated images
-├── docker-compose.yml     # Development Docker config
-├── docker-compose.prod.yml # Production Docker config
+├── docker compose.yml     # Development Docker config
+├── docker compose.prod.yml # Production Docker config
 ├── Dockerfile             # Docker image definition
 ├── deploy-prod.sh         # Production deployment script
 └── .env.prod             # Production environment template
@@ -197,21 +197,21 @@ Create reusable templates:
 
 ```bash
 # Check logs
-docker-compose logs app
+docker compose logs app
 
 # Rebuild containers
-docker-compose down
-docker-compose up -d --build
+docker compose down
+docker compose up -d --build
 ```
 
 ### Database connection issues
 
 ```bash
 # Check database is running
-docker-compose ps postgres
+docker compose ps postgres
 
 # Check database logs
-docker-compose logs postgres
+docker compose logs postgres
 
 # Verify DATABASE_URL in .env
 ```
@@ -221,8 +221,8 @@ docker-compose logs postgres
 The Dockerfile includes all necessary fonts. If you see squares:
 ```bash
 # Rebuild with no cache
-docker-compose build --no-cache app
-docker-compose up -d
+docker compose build --no-cache app
+docker compose up -d
 ```
 
 ## Features Documentation
