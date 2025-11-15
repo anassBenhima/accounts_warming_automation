@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
+import NotificationToggle from '@/components/NotificationToggle';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -105,6 +106,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+
+          {/* Notification Toggle */}
+          <NotificationToggle />
 
           {/* Logout */}
           <div className="p-3 md:p-4 border-t border-gray-200">
