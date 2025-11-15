@@ -30,6 +30,9 @@ RUN npx prisma generate
 # Build application
 RUN npm run build
 
+# Ensure public directory structure exists
+RUN mkdir -p /app/public/uploads /app/public/generated
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -55,6 +58,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Set proper permissions for upload directories
+RUN chown -R nextjs:nodejs /app/public/uploads /app/public/generated
 
 USER nextjs
 
