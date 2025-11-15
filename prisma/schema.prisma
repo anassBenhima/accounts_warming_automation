@@ -57,6 +57,7 @@ model ImageToPrompt {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, name])
   @@index([userId])
 }
 
@@ -71,6 +72,7 @@ model ImageGenerationPrompt {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, name])
   @@index([userId])
 }
 
@@ -85,6 +87,7 @@ model KeywordSearchPrompt {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, name])
   @@index([userId])
 }
 
@@ -134,6 +137,7 @@ model Template {
   generationTemplates GenerationTemplate[]
   generatedImages     GeneratedImage[]
 
+  @@unique([userId, name])
   @@index([userId])
 }
 
