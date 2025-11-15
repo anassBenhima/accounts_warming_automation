@@ -128,7 +128,7 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user, trigger }): Promise<ExtendedJWT> {
+    async jwt({ token, user, trigger }) {
       // Initial sign in - create new tokens
       if (user) {
         const refreshToken = generateRefreshToken();
