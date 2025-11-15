@@ -21,6 +21,22 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: images-automation-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    # No ports exposed - only accessible within app-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
   app:
     build:
       context: .
@@ -29,8 +45,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/images_automation?schema=public
+      REDIS_URL: redis://redis:6379
       NEXTAUTH_URL: http://localhost:3333
       NEXTAUTH_SECRET: your-secret-key-here-change-in-production
     ports:
@@ -44,6 +63,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   app-network:

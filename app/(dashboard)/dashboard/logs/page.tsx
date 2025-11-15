@@ -21,6 +21,7 @@ interface SystemLog {
 export default function SystemLogsPage() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [filter, setFilter] = useState({
     level: '',
@@ -40,7 +41,8 @@ export default function SystemLogsPage() {
     return () => clearInterval(refreshInterval);
   }, [filter]);
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true);
     try {
       const params = new URLSearchParams();
       if (filter.level) params.append('level', filter.level);
@@ -53,6 +55,7 @@ export default function SystemLogsPage() {
       console.error('Error fetching logs:', error);
     } finally {
       setLoading(false);
+      if (showSpinner) setRefreshing(false);
     }
   };
 
@@ -93,10 +96,11 @@ export default function SystemLogsPage() {
           </p>
         </div>
         <button
-          onClick={fetchLogs}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+          onClick={() => fetchLogs(true)}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw className="w-5 h-5" />
+          <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>

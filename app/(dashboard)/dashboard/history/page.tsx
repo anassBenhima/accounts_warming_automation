@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, Download, Eye, FileArchive, FileSpreadsheet, Edit } from 'lucide-react';
+import { RefreshCw, Download, Eye, FileArchive, FileSpreadsheet, Edit, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
@@ -21,6 +21,16 @@ interface Template {
   type: string;
 }
 
+interface SystemLog {
+  id: string;
+  level: string;
+  module: string;
+  action: string;
+  message: string;
+  error: string | null;
+  createdAt: string;
+}
+
 interface Generation {
   id: string;
   quantity: number;
@@ -33,10 +43,14 @@ interface Generation {
 export default function HistoryPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [changingTemplate, setChangingTemplate] = useState<{ [key: string]: boolean }>({});
   const [selectedTemplates, setSelectedTemplates] = useState<{ [key: string]: string }>({});
+  const [showLogs, setShowLogs] = useState<string | null>(null);
+  const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [expandedLog, setExpandedLog] = useState<string | null>(null);
 
   useEffect(() => {
     fetchGenerations();
@@ -50,7 +64,8 @@ export default function HistoryPage() {
     return () => clearInterval(refreshInterval);
   }, []);
 
-  const fetchGenerations = async () => {
+  const fetchGenerations = async (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true);
     try {
       const response = await fetch('/api/generations');
       const data = await response.json();
@@ -59,6 +74,19 @@ export default function HistoryPage() {
       console.error('Error fetching generations:', error);
     } finally {
       setLoading(false);
+      if (showSpinner) setRefreshing(false);
+    }
+  };
+
+  const fetchLogsForGeneration = async (generationId: string) => {
+    try {
+      const response = await fetch(`/api/logs?resourceId=${generationId}`);
+      const data = await response.json();
+      setLogs(data);
+      setShowLogs(generationId);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      toast.error('Failed to fetch logs');
     }
   };
 
@@ -128,6 +156,44 @@ export default function HistoryPage() {
     }
   };
 
+  const getProgressPercentage = (generation: Generation) => {
+    if (generation.status === 'COMPLETED') return 100;
+    if (generation.status === 'FAILED') return 0;
+    if (generation.status === 'PENDING') return 0;
+
+    // For PROCESSING status, calculate based on generated images
+    const completedImages = generation.generatedImages.filter(img => img.status === 'completed').length;
+    return Math.round((completedImages / generation.quantity) * 100);
+  };
+
+  const getProgressColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'bg-green-500';
+      case 'PROCESSING':
+        return 'bg-blue-500';
+      case 'FAILED':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'SUCCESS':
+        return 'bg-green-100 text-green-800';
+      case 'INFO':
+        return 'bg-blue-100 text-blue-800';
+      case 'WARNING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'ERROR':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const handleDownloadZip = (generationId: string) => {
     window.open(`/api/generations/${generationId}/download`, '_blank');
   };
@@ -152,10 +218,11 @@ export default function HistoryPage() {
           <p className="text-sm md:text-base text-gray-600 mt-1">View and manage your generated Pinterest pins</p>
         </div>
         <button
-          onClick={fetchGenerations}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-900 text-sm md:text-base w-full md:w-auto"
+          onClick={() => fetchGenerations(true)}
+          disabled={refreshing}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-900 text-sm md:text-base w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
+          <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
@@ -193,6 +260,22 @@ export default function HistoryPage() {
                   <p className="text-xs text-gray-500">
                     Created: {new Date(generation.createdAt).toLocaleString()}
                   </p>
+
+                  {/* Progress Bar */}
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-600">Progress</span>
+                      <span className="text-xs font-medium text-gray-900">
+                        {getProgressPercentage(generation)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(generation.status)}`}
+                        style={{ width: `${getProgressPercentage(generation)}%` }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <button
@@ -217,6 +300,14 @@ export default function HistoryPage() {
                   >
                     <Eye className="w-3 h-3 md:w-4 md:h-4" />
                     View
+                  </button>
+                  <button
+                    onClick={() => fetchLogsForGeneration(generation.id)}
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-all text-xs md:text-sm"
+                    title="View Logs"
+                  >
+                    <FileText className="w-3 h-3 md:w-4 md:h-4" />
+                    Logs
                   </button>
                 </div>
               </div>
@@ -403,6 +494,91 @@ export default function HistoryPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logs Modal */}
+      {showLogs && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowLogs(null)}
+        >
+          <div
+            className="bg-white rounded-xl p-4 md:p-6 lg:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                Generation Logs
+              </h2>
+              <button
+                onClick={() => setShowLogs(null)}
+                className="text-gray-500 hover:text-gray-700 text-xl md:text-2xl font-bold p-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            {logs.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No logs found for this generation.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {logs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+                  >
+                    <div
+                      onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                      className="p-4 cursor-pointer flex items-start justify-between hover:bg-gray-50"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${getLevelColor(
+                              log.level
+                            )}`}
+                          >
+                            {log.level}
+                          </span>
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                            {log.module}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(log.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 text-sm">
+                            {log.action}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-1">{log.message}</p>
+                      </div>
+                      {expandedLog === log.id ? (
+                        <ChevronUp className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+
+                    {expandedLog === log.id && log.error && (
+                      <div className="px-4 pb-4 border-t border-gray-200">
+                        <h4 className="text-xs font-semibold text-red-700 mb-1 mt-3">
+                          Error:
+                        </h4>
+                        <pre className="bg-red-50 p-3 rounded text-xs overflow-x-auto text-red-800">
+                          {log.error}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
