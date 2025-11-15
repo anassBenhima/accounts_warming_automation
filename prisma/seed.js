@@ -96,9 +96,16 @@ async function main() {
     console.log('No production API keys configured (set PROD_*_API_KEY environment variables to add them)');
   }
 
-  // Create default Image to Prompt template
-  const defaultImageToPrompt = await prisma.imageToPrompt.create({
-    data: {
+  // Create default Image to Prompt template (upsert to avoid duplicates)
+  const defaultImageToPrompt = await prisma.imageToPrompt.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Default Image Description',
+      },
+    },
+    update: {},
+    create: {
       userId: admin.id,
       name: 'Default Image Description',
       llmType: 'openai',
@@ -108,9 +115,16 @@ async function main() {
 
   console.log('Default Image to Prompt created:', defaultImageToPrompt);
 
-  // Create default Image Generation Prompt
-  const defaultImageGenPrompt = await prisma.imageGenerationPrompt.create({
-    data: {
+  // Create default Image Generation Prompt (upsert to avoid duplicates)
+  const defaultImageGenPrompt = await prisma.imageGenerationPrompt.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Pinterest Food Pin',
+      },
+    },
+    update: {},
+    create: {
       userId: admin.id,
       name: 'Pinterest Food Pin',
       prompt: 'Create a highly detailed and vivid image of a Pinterest-style food pin featuring the given recipe. The image should prominently display the prepared dish with authentic textures, vibrant colors, and natural shapes. Show the food arranged attractively on a rustic wooden table or elegant serving dish, bathed in warm, soft natural light that evokes a cozy, inviting atmosphere typical of seasonal cooking. Include contextual props such as subtle kitchenware, fresh ingredients related to the recipe, and seasonal elements like autumn leaves or simple cloth napkins that complement but do not distract from the dish. Avoid any brands, logos, text, or icons. The composition should be balanced and visually appealing, suitable to inspire Pinterest users looking for easy, delicious recipes. Use realistic lighting and shadows to enhance depth and mouthwatering appeal. The scene should capture warmth, comfort, and a home-cooked feel. Aim for an original image that clearly represents the recipe trend with an inviting and appetizing mood.',
@@ -119,9 +133,16 @@ async function main() {
 
   console.log('Default Image Generation Prompt created:', defaultImageGenPrompt);
 
-  // Create default Keyword Search Prompt
-  const defaultKeywordPrompt = await prisma.keywordSearchPrompt.create({
-    data: {
+  // Create default Keyword Search Prompt (upsert to avoid duplicates)
+  const defaultKeywordPrompt = await prisma.keywordSearchPrompt.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Trending Recipes',
+      },
+    },
+    update: {},
+    create: {
       userId: admin.id,
       name: 'Trending Recipes',
       prompt: `Act as a senior culinary trend analyst. Using the latest data from Google Trends, Pinterest trending topics, and other credible sources, identify the top 10 trending recipes right now. For each recipe, produce a JSON object in the exact format below, integrating the best keyword, its cluster, and the common "intent phrase" patterns found in high-performing Pinterest pin descriptions (e.g., "how to make…", "easy…", "quick…", "best…", seasonal/occasion phrases). Write titles and descriptions in a natural, non-spammy style, front-load the primary keyword, and keep descriptions concise and skimmable. Avoid brands, logos, emojis, and hashtags. No extra commentary—return only a valid JSON array with 10 objects.
@@ -158,6 +179,100 @@ Guidelines to follow:
   });
 
   console.log('Default Keyword Search Prompt created:', defaultKeywordPrompt);
+
+  // Create example text templates (upsert to avoid duplicates)
+  const template1 = await prisma.template.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Simple Top Text',
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      name: 'Simple Top Text',
+      type: 'TEXT',
+      textContent: 'Your Recipe Title Here',
+      fontSize: 8,
+      fontColor: '#FFFFFF',
+      fontFamily: 'DejaVu Sans',
+      positionY: 10,
+      isActive: true,
+    },
+  });
+
+  const template2 = await prisma.template.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Center Text Overlay',
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      name: 'Center Text Overlay',
+      type: 'TEXT',
+      textContent: 'Delicious Recipe',
+      fontSize: 10,
+      fontColor: '#FFD700',
+      fontFamily: 'DejaVu Sans',
+      positionY: 50,
+      isActive: true,
+    },
+  });
+
+  const template3 = await prisma.template.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Bottom Banner Black',
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      name: 'Bottom Banner Black',
+      type: 'TEXT_WITH_BACKGROUND',
+      textContent: 'Easy Recipe - Save for Later',
+      fontSize: 8,
+      fontColor: '#FFFFFF',
+      backgroundColor: '#000000',
+      fontFamily: 'DejaVu Sans',
+      positionY: 90,
+      isActive: true,
+    },
+  });
+
+  const template4 = await prisma.template.upsert({
+    where: {
+      userId_name: {
+        userId: admin.id,
+        name: 'Top Banner Red',
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      name: 'Top Banner Red',
+      type: 'TEXT_WITH_BACKGROUND',
+      textContent: 'Trending Recipe',
+      fontSize: 7,
+      fontColor: '#FFFFFF',
+      backgroundColor: '#DC2626',
+      fontFamily: 'DejaVu Sans',
+      positionY: 5,
+      isActive: true,
+    },
+  });
+
+  console.log('Example templates created:', {
+    text1: template1.name,
+    text2: template2.name,
+    textBg1: template3.name,
+    textBg2: template4.name,
+  });
 }
 
 main()
