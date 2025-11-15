@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Generation" ADD COLUMN     "imageHeight" INTEGER NOT NULL DEFAULT 1500,
+ADD COLUMN     "imageWidth" INTEGER NOT NULL DEFAULT 1000;

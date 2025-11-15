@@ -1,0 +1,289 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  apiKeys                  ApiKey[]
+  imageToPrompts           ImageToPrompt[]
+  imageGenerationPrompts   ImageGenerationPrompt[]
+  keywordSearchPrompts     KeywordSearchPrompt[]
+  templates                Template[]
+  generations              Generation[]
+  systemLogs               SystemLog[]
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   // Alias name
+  type        String   // "seedream", "openai", "deepseek"
+  apiKey      String
+  modelName   String?  // For specific model names
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([userId])
+}
+
+model ImageToPrompt {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  prompt    String   @db.Text
+  llmType   String   // "openai" or "deepseek"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ImageGenerationPrompt {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  prompt    String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model KeywordSearchPrompt {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  prompt    String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum TemplateType {
+  OVERLAY_IMAGE        // Image with 0.1 opacity as front layer
+  WATERMARK            // Watermark with position
+  LOGO                 // Logo with position and size
+  TEXT                 // Text at center full width
+  TEXT_WITH_BACKGROUND // Text with full-width background bar (top, center, or bottom)
+}
+
+model Template {
+  id        String       @id @default(cuid())
+  userId    String
+  name      String
+  type      TemplateType
+
+  // File path for uploaded images/logos
+  filePath  String?
+
+  // Position settings (x, y in pixels or percentage)
+  positionX Float?
+  positionY Float?
+
+  // Size settings (width, height in pixels or percentage)
+  width     Float?
+  height    Float?
+
+  // Opacity (0-1)
+  opacity   Float?
+
+  // Text content (for TEXT and TEXT_WITH_BACKGROUND types)
+  textContent     String?
+  fontSize        Float?
+  fontColor       String?
+  fontFamily      String?
+  backgroundColor String?  // Background color for TEXT_WITH_BACKGROUND type
+
+  // Preview image path
+  previewPath String?
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generationTemplates GenerationTemplate[]
+  generatedImages     GeneratedImage[]
+
+  @@index([userId])
+}
+
+enum GenerationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Generation {
+  id          String           @id @default(cuid())
+  userId      String
+
+  // Step 1: Selected API keys
+  imageGenApiKeyId      String
+  keywordSearchApiKeyId String
+  imageDescApiKeyId     String
+
+  // Model names
+  imageGenModel    String
+  imageDescModel   String
+
+  // Text in image option (for Seedream)
+  includeTextInImage Boolean @default(false)
+
+  // Step 3: Quantity and Image Dimensions
+  quantity         Int
+  imageWidth       Int      @default(1000)
+  imageHeight      Int      @default(1500)
+
+  // Step 4: Uploaded image and keywords
+  uploadedImagePath String
+  additionalKeywords String?
+
+  // Step 5-7: Selected prompts
+  imageToPromptId         String
+  imageGenerationPromptId String
+  keywordSearchPromptId   String
+
+  // Generated description from uploaded image
+  imageDescription String? @db.Text
+
+  // Status
+  status      GenerationStatus @default(PENDING)
+  error       String?          @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedImages     GeneratedImage[]
+  generationTemplates GenerationTemplate[]
+
+  @@index([userId])
+}
+
+model GenerationTemplate {
+  id           String     @id @default(cuid())
+  generationId String
+  templateId   String
+
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  template     Template   @relation(fields: [templateId], references: [id])
+
+  @@unique([generationId, templateId])
+}
+
+model GeneratedImage {
+  id           String     @id @default(cuid())
+  generationId String
+  templateId   String?    // Track which template was applied
+
+  // Original generated image path
+  originalPath String
+
+  // Final processed image path (with templates applied)
+  finalPath    String
+
+  // Pinterest metadata
+  title        String
+  description  String     @db.Text
+  keywords     String[]   // Array of keywords
+
+  // Status
+  status       String     @default("completed") // completed, failed
+  error        String?    @db.Text
+
+  createdAt    DateTime   @default(now())
+
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  template     Template?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([generationId])
+  @@index([templateId])
+}
+
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+enum LogModule {
+  AUTH
+  API_KEY
+  TEMPLATE
+  PROMPT
+  GENERATION
+  IMAGE_PROCESSING
+  API_CALL
+  SYSTEM
+}
+
+model SystemLog {
+  id           String    @id @default(cuid())
+  userId       String?   // Optional - some logs might be system-wide
+
+  // Log classification
+  level        LogLevel
+  module       LogModule
+  action       String    // e.g., "create", "update", "delete", "api_call", "generation_start"
+
+  // Context
+  resourceType String?   // e.g., "ApiKey", "Generation", "Template"
+  resourceId   String?   // ID of the resource being acted upon
+
+  // Input/Output tracking
+  input        String?   @db.Text  // JSON string of input data
+  output       String?   @db.Text  // JSON string of output data
+
+  // Details
+  message      String    @db.Text  // Human-readable message
+  metadata     String?   @db.Text  // Additional JSON metadata
+
+  // Error tracking
+  error        String?   @db.Text  // Error message if any
+  stackTrace   String?   @db.Text  // Stack trace for errors
+
+  // Performance
+  duration     Int?      // Duration in milliseconds
+
+  createdAt    DateTime  @default(now())
+
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([level])
+  @@index([module])
+  @@index([createdAt])
+}
