@@ -10,6 +10,14 @@ class RedisService {
   }
 
   private initializeClient() {
+    // Skip Redis initialization during build time
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      console.log('⚠ Skipping Redis initialization during build');
+      this.client = null;
+      this.isConnected = false;
+      return;
+    }
+
     try {
       const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
@@ -27,6 +35,7 @@ class RedisService {
           }
           return false;
         },
+        lazyConnect: true, // Don't connect immediately
       });
 
       this.client.on('connect', () => {
@@ -41,6 +50,12 @@ class RedisService {
 
       this.client.on('close', () => {
         console.log('⚠ Redis connection closed');
+        this.isConnected = false;
+      });
+
+      // Attempt to connect, but don't throw on failure
+      this.client.connect().catch((error) => {
+        console.error('Failed to connect to Redis:', error);
         this.isConnected = false;
       });
 

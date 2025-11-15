@@ -52,6 +52,9 @@ services:
       REDIS_URL: redis://redis:6379
       NEXTAUTH_URL: http://localhost:3333
       NEXTAUTH_SECRET: your-secret-key-here-change-in-production
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: BE4mXECZaFMPvIBBFS86EOMx9fTfKgR9i3Su0a3CklC-bRHf0AMLb79F_zTZA6uNet43YkmU9yPyr4nCe0To5jI
+      VAPID_PRIVATE_KEY: 0T8xDX-ZpuGNAwGo1dw9hK8ykSTh-qzqSBJgWueH9qs
+      VAPID_SUBJECT: mailto:noreply@warming.app
     ports:
       - "3333:3000"
     volumes:

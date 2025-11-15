@@ -443,7 +443,7 @@ async function generateImage(
       const result = await falService.generateImage({
         prompt,
         modelName: model,
-        imageSize,
+        imageSize: imageSize as any,
         numImages: 1,
         outputFormat: 'png',
         enableSafetyChecker: true,
