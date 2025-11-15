@@ -82,31 +82,44 @@ class FalService {
         enable_safety_checker: enableSafetyChecker,
       };
 
-      // Add image size
-      if (typeof imageSize === 'string') {
-        input.image_size = imageSize;
-      } else {
-        input.image_size = imageSize;
-      }
-
       // Add optional parameters based on model
       if (modelName.includes('flux')) {
+        // FLUX models use width/height directly (not image_size)
+        if (typeof imageSize === 'object' && 'width' in imageSize && 'height' in imageSize) {
+          input.width = imageSize.width;
+          input.height = imageSize.height;
+        } else {
+          // If preset string provided, use image_size
+          input.image_size = imageSize;
+        }
         input.num_inference_steps = numInferenceSteps;
         input.guidance_scale = guidanceScale;
         if (seed) input.seed = seed;
       } else if (modelName.includes('imagen')) {
-        // Imagen-specific parameters
+        // Imagen uses aspect_ratio presets
         input.aspect_ratio = typeof imageSize === 'string' ? imageSize : '1:1';
         if (seed) input.seed = seed;
       } else if (modelName.includes('recraft')) {
-        // Recraft-specific parameters
+        // Recraft uses size parameter
         input.size = typeof imageSize === 'string' ? imageSize : '1024x1024';
         if (seed) input.seed = seed;
       } else if (modelName.includes('hidream') || modelName.includes('qwen')) {
-        // HiDream and Qwen parameters
+        // HiDream and Qwen use image_size
+        if (typeof imageSize === 'string') {
+          input.image_size = imageSize;
+        } else {
+          input.image_size = imageSize;
+        }
         input.num_inference_steps = numInferenceSteps;
         input.guidance_scale = guidanceScale;
         if (seed) input.seed = seed;
+      } else {
+        // Default: use image_size
+        if (typeof imageSize === 'string') {
+          input.image_size = imageSize;
+        } else {
+          input.image_size = imageSize;
+        }
       }
 
       // Use subscribe for real-time generation
