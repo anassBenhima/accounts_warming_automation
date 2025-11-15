@@ -153,12 +153,12 @@ export const authOptions: NextAuthOptions = {
       const now = Math.floor(Date.now() / 1000);
 
       if (extendedToken.accessTokenExpires && now < extendedToken.accessTokenExpires) {
-        return extendedToken;
+        return token;
       }
 
       // Access token has expired, try to refresh it
       console.log(`⚠ Access token expired for user ${extendedToken.id}, attempting refresh...`);
-      return refreshAccessToken(extendedToken);
+      return await refreshAccessToken(extendedToken) as any;
     },
   },
   events: {
