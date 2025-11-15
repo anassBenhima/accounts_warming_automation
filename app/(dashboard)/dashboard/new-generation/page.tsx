@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Upload, Play, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -25,7 +26,21 @@ const MODEL_PRESETS = {
   ],
 };
 
+// Step names for the wizard
+const STEP_NAMES = [
+  'Image Generation API',
+  'Keyword Search API',
+  'Quantity',
+  'Upload & Keywords',
+  'Image Description',
+  'Image Generation',
+  'Keyword Search',
+  'Description API',
+  'Templates',
+];
+
 export default function NewGenerationPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [apiKeys, setApiKeys] = useState<any[]>([]);
@@ -117,26 +132,11 @@ export default function NewGenerationPage() {
       });
 
       if (response.ok) {
-        toast.success('Generation process started! Check the history page for progress.');
-        // Reset form
-        setFormData({
-          imageGenApiKeyId: '',
-          imageGenModel: '',
-          keywordSearchApiKeyId: '',
-          imageDescApiKeyId: '',
-          imageDescModel: '',
-          quantity: 10,
-          imageWidth: 1000,
-          imageHeight: 1500,
-          uploadedImagePath: '',
-          additionalKeywords: '',
-          imageToPromptId: '',
-          imageGenerationPromptId: '',
-          keywordSearchPromptId: '',
-          includeTextInImage: false,
-        });
-        setSelectedTemplates([]);
-        setStep(1);
+        toast.success('Generation process started! Redirecting to history...');
+        // Redirect to history page after short delay to show toast
+        setTimeout(() => {
+          router.push('/dashboard/history');
+        }, 1000);
       } else {
         const error = await response.json();
         toast.error(`Error: ${error.error}`);
@@ -171,21 +171,30 @@ export default function NewGenerationPage() {
       </div>
 
       {/* Progress Steps */}
-      <div className="flex items-center justify-between mb-8 overflow-x-auto">
+      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => (
           <div key={s} className="flex items-center">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                s <= step
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-500'
-              }`}
-            >
-              {s}
+            <div className="flex flex-col items-center min-w-max">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-semibold transition-all ${
+                  s <= step
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+              >
+                {s}
+              </div>
+              <span
+                className={`mt-2 text-xs md:text-sm font-medium text-center ${
+                  s <= step ? 'text-blue-600' : 'text-gray-400'
+                }`}
+              >
+                {STEP_NAMES[s - 1]}
+              </span>
             </div>
             {s < 9 && (
               <ChevronRight
-                className={`w-5 h-5 mx-2 ${
+                className={`w-4 h-4 md:w-5 md:h-5 mx-1 md:mx-2 flex-shrink-0 ${
                   s < step ? 'text-blue-600' : 'text-gray-300'
                 }`}
               />

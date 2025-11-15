@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Edit2, Upload, Eye } from 'lucide-react';
 import Image from 'next/image';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Template {
   id: string;
@@ -43,6 +44,10 @@ export default function TemplatesPage() {
     fontColor: '#000000',
     fontFamily: 'Arial',
     backgroundColor: '#000000',
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,11 +125,11 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id) return;
 
     try {
-      const response = await fetch(`/api/templates/${id}`, {
+      const response = await fetch(`/api/templates/${deleteConfirm.id}`, {
         method: 'DELETE',
       });
 
@@ -304,7 +309,7 @@ export default function TemplatesPage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleDelete(template.id)}
+                    onClick={() => setDeleteConfirm({ isOpen: true, id: template.id })}
                     className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium"
                   >
                     <Trash2 className="w-4 h-4 mx-auto" />
@@ -585,6 +590,17 @@ export default function TemplatesPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Delete Template"
+        message="Are you sure you want to delete this template? This action cannot be undone."
+        confirmText="Delete"
+        isDanger={true}
+      />
     </div>
   );
 }

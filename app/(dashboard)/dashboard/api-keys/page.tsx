@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Eye, EyeOff, Edit2, Check, X } from 'lucide-react';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface ApiKey {
   id: string;
@@ -25,6 +26,10 @@ export default function ApiKeysPage() {
   });
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
   const [visibleKeys, setVisibleKeys] = useState<{ [key: string]: string }>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
 
   useEffect(() => {
     fetchApiKeys();
@@ -105,11 +110,11 @@ export default function ApiKeysPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this API key?')) return;
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id) return;
 
     try {
-      const response = await fetch(`/api/api-keys/${id}`, {
+      const response = await fetch(`/api/api-keys/${deleteConfirm.id}`, {
         method: 'DELETE',
       });
 
@@ -249,7 +254,7 @@ export default function ApiKeysPage() {
                     <Edit2 className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(key.id)}
+                    onClick={() => setDeleteConfirm({ isOpen: true, id: key.id })}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete API Key"
                   >
@@ -356,6 +361,17 @@ export default function ApiKeysPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Delete API Key"
+        message="Are you sure you want to delete this API key? This action cannot be undone."
+        confirmText="Delete"
+        isDanger={true}
+      />
     </div>
   );
 }

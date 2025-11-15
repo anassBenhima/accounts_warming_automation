@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Prompt {
   id: string;
@@ -41,6 +42,10 @@ export default function PromptManager({
     name: '',
     prompt: '',
     llmType: 'openai',
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
   });
 
   useEffect(() => {
@@ -96,11 +101,11 @@ export default function PromptManager({
     setShowModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this prompt?')) return;
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id) return;
 
     try {
-      const response = await fetch(`${apiEndpoint}/${id}`, {
+      const response = await fetch(`${apiEndpoint}/${deleteConfirm.id}`, {
         method: 'DELETE',
       });
 
@@ -207,7 +212,7 @@ export default function PromptManager({
                     <Edit2 className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(prompt.id)}
+                    onClick={() => setDeleteConfirm({ isOpen: true, id: prompt.id })}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -335,6 +340,17 @@ export default function PromptManager({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Delete Prompt"
+        message="Are you sure you want to delete this prompt? This action cannot be undone."
+        confirmText="Delete"
+        isDanger={true}
+      />
     </div>
   );
 }
