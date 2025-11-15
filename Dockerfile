@@ -60,14 +60,20 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
 
-# Set proper permissions for upload directories
-RUN chown -R nextjs:nodejs /app/public/uploads /app/public/generated
+# Copy initialization script
+COPY scripts/init.sh /app/init.sh
+RUN chmod +x /app/init.sh
 
-USER nextjs
+# Create upload directories with proper permissions
+RUN mkdir -p /app/public/uploads /app/public/generated && \
+    chown -R nextjs:nodejs /app/public/uploads /app/public/generated && \
+    chmod -R 755 /app/public/uploads /app/public/generated
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Run as root to allow init script to set permissions on volume mounts
+# The init script will exec node as nextjs user
+CMD ["/app/init.sh"]
