@@ -4,6 +4,52 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createUserLogger } from '@/lib/logger';
 
+// GET single API key
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Verify ownership before fetching
+    const apiKey = await prisma.apiKey.findFirst({
+      where: {
+        id,
+        userId: session.user.id, // Ensure user owns this resource
+      },
+    });
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    // Return the API key with the actual key value
+    return NextResponse.json({
+      id: apiKey.id,
+      name: apiKey.name,
+      type: apiKey.type,
+      key: apiKey.apiKey, // Include the actual API key value
+      modelName: apiKey.modelName,
+      isActive: apiKey.isActive,
+      createdAt: apiKey.createdAt,
+      updatedAt: apiKey.updatedAt,
+    });
+  } catch (error) {
+    console.error('Error fetching API key:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch API key' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT update API key
 export async function PUT(
   request: NextRequest,
