@@ -21,6 +21,7 @@ import {
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import NotificationToggle from '@/components/NotificationToggle';
+import SessionErrorHandler from '@/components/SessionErrorHandler';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -42,6 +43,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
+      <SessionErrorHandler />
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40">
