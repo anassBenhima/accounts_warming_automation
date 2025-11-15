@@ -5,6 +5,7 @@ import path from 'path';
 import { writeFile, readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { createUserLogger } from '@/lib/logger';
+import { falService } from '@/lib/fal';
 
 export async function processGeneration(generationId: string) {
   try {
@@ -114,6 +115,7 @@ export async function processGeneration(generationId: string) {
         // Generate image
         const generatedImageUrl = await generateImage(
           imageGenApiKey.apiKey,
+          imageGenApiKey.type,
           generation.imageGenModel,
           fullPrompt,
           generation.imageWidth,
@@ -393,33 +395,61 @@ async function generateKeywords(
 
 async function generateImage(
   apiKey: string,
+  apiType: string,
   model: string,
   prompt: string,
   width: number = 1000,
   height: number = 1500
 ): Promise<string> {
   try {
-    const response = await axios.post(
-      'https://ark.ap-southeast.bytepluses.com/api/v3/images/generations',
-      {
-        model,
-        prompt,
-        response_format: 'url',
-        width,
-        height,
-        aspect_ratio: `${width}:${height}`,
-        stream: false,
-        watermark: false,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // Use fal.ai for 'fal' type, seedream for others
+    if (apiType === 'fal') {
+      // Configure fal service with API key
+      falService.configure(apiKey);
 
-    return response.data.data[0].url;
+      // Get recommended image size based on model
+      const imageSize = falService.getRecommendedImageSize(model, width, height);
+
+      // Generate image using fal.ai
+      const result = await falService.generateImage({
+        prompt,
+        modelName: model,
+        imageSize,
+        numImages: 1,
+        outputFormat: 'png',
+        enableSafetyChecker: true,
+      });
+
+      // Return first image URL
+      if (result.images && result.images.length > 0) {
+        return result.images[0].url;
+      } else {
+        throw new Error('No images returned from fal.ai');
+      }
+    } else {
+      // Use seedream API for 'seedream' type
+      const response = await axios.post(
+        'https://ark.ap-southeast.bytepluses.com/api/v3/images/generations',
+        {
+          model,
+          prompt,
+          response_format: 'url',
+          width,
+          height,
+          aspect_ratio: `${width}:${height}`,
+          stream: false,
+          watermark: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data.data[0].url;
+    }
   } catch (error) {
     console.error('Error generating image:', error);
     throw error;

@@ -13,6 +13,16 @@ const MODEL_PRESETS = {
     'seedream-3-5-250815',
     'seedream-3-0-250801',
   ],
+  fal: [
+    'fal-ai/flux/dev',
+    'fal-ai/flux/schnell',
+    'fal-ai/flux-pro/v1.1',
+    'fal-ai/flux-pro/v1.1-ultra',
+    'fal-ai/imagen4/preview',
+    'fal-ai/recraft/v3/text-to-image',
+    'fal-ai/hidream-i1-full',
+    'fal-ai/qwen-image',
+  ],
   openai: [
     'gpt-4o',
     'gpt-4o-mini',
@@ -155,7 +165,7 @@ export default function NewGenerationPage() {
     );
   };
 
-  const seedreamKeys = apiKeys.filter((k) => k.type === 'seedream' && k.isActive);
+  const imageGenKeys = apiKeys.filter((k) => (k.type === 'seedream' || k.type === 'fal') && k.isActive);
   const keywordKeys = apiKeys.filter((k) => (k.type === 'openai' || k.type === 'deepseek') && k.isActive);
   const activeTemplates = templates.filter((t) => t.isActive);
 
@@ -213,41 +223,48 @@ export default function NewGenerationPage() {
             <select
               value={formData.imageGenApiKeyId}
               onChange={(e) =>
-                setFormData({ ...formData, imageGenApiKeyId: e.target.value })
+                setFormData({ ...formData, imageGenApiKeyId: e.target.value, imageGenModel: '' })
               }
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 placeholder:text-gray-400"
             >
-              <option value="">Select Seedream API Key</option>
-              {seedreamKeys.map((key) => (
+              <option value="">Select Image Generation API Key</option>
+              {imageGenKeys.map((key) => (
                 <option key={key.id} value={key.id}>
-                  {key.name}
+                  {key.name} ({key.type})
                 </option>
               ))}
             </select>
 
-            {formData.imageGenApiKeyId && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Select Model Preset
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {MODEL_PRESETS.seedream.map((model) => (
-                    <button
-                      key={model}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, imageGenModel: model })}
-                      className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
-                        formData.imageGenModel === model
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
-                      }`}
-                    >
-                      {model}
-                    </button>
-                  ))}
+            {formData.imageGenApiKeyId && (() => {
+              const selectedKey = imageGenKeys.find(k => k.id === formData.imageGenApiKeyId);
+              const keyType = selectedKey?.type;
+              const presets = keyType === 'seedream' ? MODEL_PRESETS.seedream :
+                            keyType === 'fal' ? MODEL_PRESETS.fal : [];
+
+              return presets.length > 0 ? (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Select Model Preset
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {presets.map((model) => (
+                      <button
+                        key={model}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, imageGenModel: model })}
+                        className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                          formData.imageGenModel === model
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                        }`}
+                      >
+                        {model}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : null;
+            })()}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -259,7 +276,7 @@ export default function NewGenerationPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, imageGenModel: e.target.value })
                 }
-                placeholder="Model name (e.g., seedream-4-0-250828)"
+                placeholder="Model name (e.g., seedream-4-0-250828 or fal-ai/flux/dev)"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 placeholder:text-gray-400"
               />
             </div>

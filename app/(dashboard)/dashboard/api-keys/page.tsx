@@ -150,8 +150,49 @@ export default function ApiKeysPage() {
         return 'bg-green-100 text-green-800';
       case 'deepseek':
         return 'bg-purple-100 text-purple-800';
+      case 'fal':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getModelPlaceholder = (type: string) => {
+    switch (type) {
+      case 'seedream':
+        return 'seedream-4-0-250828';
+      case 'fal':
+        return 'fal-ai/flux/dev';
+      case 'openai':
+        return 'gpt-4-vision-preview';
+      case 'deepseek':
+        return 'deepseek-chat';
+      default:
+        return '';
+    }
+  };
+
+  const getModelSuggestions = (type: string): string[] => {
+    switch (type) {
+      case 'fal':
+        return [
+          'fal-ai/flux/dev', // FLUX.1 [dev] - 12B parameter model
+          'fal-ai/flux/schnell', // FLUX.1 [schnell] - Fastest (1-4 steps)
+          'fal-ai/flux-pro/v1.1', // FLUX Pro 1.1 - Professional grade
+          'fal-ai/flux-pro/v1.1-ultra', // FLUX Pro Ultra - Up to 2K
+          'fal-ai/imagen4/preview', // Google Imagen 4 - Highest quality
+          'fal-ai/recraft/v3/text-to-image', // Recraft V3 - Vector art, typography
+          'fal-ai/hidream-i1-full', // HiDream-I1 - 17B parameters
+          'fal-ai/qwen-image', // Qwen-Image - Complex text rendering
+        ];
+      case 'seedream':
+        return ['seedream-4-0-250828'];
+      case 'openai':
+        return ['gpt-4-vision-preview', 'gpt-4-turbo', 'gpt-4.1-2025-04-14'];
+      case 'deepseek':
+        return ['deepseek-chat', 'deepseek-coder'];
+      default:
+        return [];
     }
   };
 
@@ -298,11 +339,12 @@ export default function ApiKeysPage() {
                 <select
                   value={formData.type}
                   onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
+                    setFormData({ ...formData, type: e.target.value, modelName: '' })
                   }
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900"
                 >
                   <option value="seedream">Seedream (Image Generation)</option>
+                  <option value="fal">fal.ai (Image Generation - FLUX, Imagen, etc.)</option>
                   <option value="openai">OpenAI (Keyword Search)</option>
                   <option value="deepseek">Deepseek (Keyword Search)</option>
                 </select>
@@ -326,17 +368,35 @@ export default function ApiKeysPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Model Name (Optional)
+                  Model Name {formData.type === 'fal' ? '(Required)' : '(Optional)'}
                 </label>
-                <input
-                  type="text"
-                  value={formData.modelName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, modelName: e.target.value })
-                  }
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400"
-                  placeholder="seedream-4-0-250828"
-                />
+                {getModelSuggestions(formData.type).length > 0 ? (
+                  <select
+                    value={formData.modelName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, modelName: e.target.value })
+                    }
+                    required={formData.type === 'fal'}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900"
+                  >
+                    <option value="">Select a model...</option>
+                    {getModelSuggestions(formData.type).map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.modelName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, modelName: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                    placeholder={getModelPlaceholder(formData.type)}
+                  />
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mt-6">
