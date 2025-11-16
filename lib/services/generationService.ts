@@ -444,10 +444,9 @@ async function generateImage(
       const result = await falService.generateImage({
         prompt,
         modelName: model,
-        imageSize: imageSize as any,
+        width: imageSize.width,
+        height: imageSize.height,
         numImages: 1,
-        outputFormat: 'png',
-        enableSafetyChecker: true,
       });
 
       // Return first image URL
