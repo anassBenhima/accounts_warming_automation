@@ -90,6 +90,22 @@ async function main() {
     prodKeys.push({ type: 'OpenAI Describer', name: prodOpenAIImageDescKey.name });
   }
 
+  // Add default fal.ai API key
+  const falKey = await prisma.apiKey.upsert({
+    where: { id: 'default-fal-key' },
+    update: {},
+    create: {
+      id: 'default-fal-key',
+      userId: admin.id,
+      name: 'Default fal.ai',
+      type: 'fal',
+      apiKey: '43691b99-ce35-481d-8d9a-849bb6e79041:9d031665da58aaaefd3ac22ce7cd79e5',
+      modelName: 'fal-ai/flux-pro/v1.1',
+      isActive: true,
+    },
+  });
+  console.log('Default fal.ai API key created:', falKey.name);
+
   if (prodKeys.length > 0) {
     console.log('Production API keys created:', prodKeys);
   } else {
