@@ -10,7 +10,9 @@ RUN apk add --no-cache \
     font-noto-cjk \
     font-noto-emoji \
     cairo \
-    pango
+    pango \
+    exiftool \
+    perl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -37,7 +39,7 @@ RUN mkdir -p /app/public/uploads /app/public/generated
 FROM base AS runner
 WORKDIR /app
 
-# Install runtime dependencies for Sharp and SVG text rendering
+# Install runtime dependencies for Sharp, SVG text rendering, and exiftool
 RUN apk add --no-cache \
     fontconfig \
     ttf-dejavu \
@@ -45,7 +47,9 @@ RUN apk add --no-cache \
     font-noto-cjk \
     font-noto-emoji \
     cairo \
-    pango
+    pango \
+    exiftool \
+    perl
 
 ENV NODE_ENV=production
 

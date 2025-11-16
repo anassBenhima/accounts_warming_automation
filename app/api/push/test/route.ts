@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendPushNotifications } from '@/lib/pushNotification';
+import { sendPushNotification } from '@/lib/pushNotification';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,25 +30,21 @@ export async function POST(request: NextRequest) {
     await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
 
     // Send test notification
-    const result = await sendPushNotifications(
+    const result = await sendPushNotification(
       session.user.id,
       {
         title: 'Test Notification',
         body: `This is a test notification sent after ${delaySeconds} second${delaySeconds !== 1 ? 's' : ''}. Your notifications are working! 🔥`,
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-72x72.png',
-        data: {
-          url: '/dashboard',
-          type: 'test',
-        },
+        url: '/dashboard',
+        tag: 'test',
       }
     );
 
     return NextResponse.json({
       message: 'Test notification sent successfully',
       delaySeconds,
-      sentTo: result.successCount,
-      failed: result.failureCount,
+      sentTo: result.sent,
+      failed: result.failed,
     });
   } catch (error) {
     console.error('Error sending test notification:', error);
