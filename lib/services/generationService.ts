@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { createUserLogger } from '@/lib/logger';
 import { falService } from '@/lib/fal';
 import { sendGenerationCompleteNotification, sendGenerationFailedNotification } from '@/lib/pushNotification';
+import { exiftool } from 'exiftool-vendored';
 
 export async function processGeneration(generationId: string) {
   try {
@@ -707,9 +708,38 @@ async function addMetadataToImage(
   imagePath: string,
   metadata: { title: string; description: string; keywords: string[] }
 ): Promise<void> {
-  // This would use exiftool or similar to add EXIF/IPTC metadata
-  // For now, we'll skip actual metadata writing as it requires additional dependencies
-  console.log(`Metadata for ${imagePath}:`, metadata);
+  try {
+    const fullImagePath = path.join(process.cwd(), 'public', imagePath);
+
+    // Write EXIF and IPTC metadata to the image
+    // Using 'as any' to bypass strict type checking as these are valid exiftool tags
+    await exiftool.write(
+      fullImagePath,
+      {
+        // IPTC metadata (widely supported for images)
+        'IPTC:ObjectName': metadata.title,
+        'IPTC:Caption-Abstract': metadata.description,
+        'IPTC:Keywords': metadata.keywords,
+
+        // XMP metadata (modern standard, good for web)
+        'XMP:Title': metadata.title,
+        'XMP:Description': metadata.description,
+        'XMP:Subject': metadata.keywords,
+
+        // EXIF metadata
+        'EXIF:ImageDescription': metadata.description,
+        'EXIF:XPTitle': metadata.title,
+        'EXIF:XPKeywords': metadata.keywords.join('; '),
+        'EXIF:XPComment': metadata.description,
+      } as any,
+      ['-overwrite_original'] // Don't create backup files
+    );
+
+    console.log(`Successfully wrote metadata to ${imagePath}`);
+  } catch (error) {
+    console.error('Error writing metadata to image:', error);
+    // Don't throw - metadata writing is not critical, continue processing
+  }
 }
 
 function escapeXml(unsafe: string): string {
