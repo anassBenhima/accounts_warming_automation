@@ -27,6 +27,7 @@ model User {
   generations              Generation[]
   systemLogs               SystemLog[]
   pushSubscriptions        PushSubscription[]
+  bulkGenerations          BulkGeneration[]
 }
 
 model ApiKey {
@@ -318,4 +319,95 @@ model PushSubscription {
   @@unique([userId, endpoint])
   @@index([userId])
   @@index([enabled])
+}
+
+enum BulkGenerationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum BulkGenerationRowStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model BulkGeneration {
+  id        String               @id @default(cuid())
+  userId    String
+  name      String               // User-given name for this bulk generation
+
+  // API keys used for this bulk generation
+  imageGenApiKeyId      String
+  keywordSearchApiKeyId String
+  imageDescApiKeyId     String
+
+  // Image dimensions
+  imageWidth  Int @default(1000)
+  imageHeight Int @default(1500)
+
+  // Status tracking
+  status        BulkGenerationStatus @default(PENDING)
+  totalRows     Int                  @default(0)
+  completedRows Int                  @default(0)
+  failedRows    Int                  @default(0)
+  error         String?              @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rows BulkGenerationRow[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model BulkGenerationRow {
+  id               String @id @default(cuid())
+  bulkGenerationId String
+
+  // Input data
+  keywords String @db.Text // Comma-separated or JSON keywords
+  imageUrl String          // URL or path to input image
+  quantity Int             // Number of pins to generate for this row
+
+  // Status tracking
+  status        BulkGenerationRowStatus @default(PENDING)
+  completedPins Int                     @default(0)
+  failedPins    Int                     @default(0)
+  error         String?                 @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bulkGeneration BulkGeneration     @relation(fields: [bulkGenerationId], references: [id], onDelete: Cascade)
+  generatedPins  BulkGeneratedPin[]
+
+  @@index([bulkGenerationId])
+  @@index([status])
+}
+
+model BulkGeneratedPin {
+  id    String @id @default(cuid())
+  rowId String
+
+  // Generated content
+  imageUrl    String   @db.Text // Generated image URL/path
+  title       String
+  description String   @db.Text
+  keywords    String[] // Array of keywords
+
+  // Status
+  status String @default("completed") // completed, failed
+
+  createdAt DateTime @default(now())
+
+  row BulkGenerationRow @relation(fields: [rowId], references: [id], onDelete: Cascade)
+
+  @@index([rowId])
 }
