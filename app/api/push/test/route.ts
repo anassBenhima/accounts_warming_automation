@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendPushNotifications } from '@/lib/push-notifications';
+import { sendPushNotifications } from '@/lib/pushNotification';
 
 export async function POST(request: NextRequest) {
   try {
