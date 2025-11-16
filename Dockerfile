@@ -12,7 +12,13 @@ RUN apk add --no-cache \
     cairo \
     pango \
     exiftool \
-    perl
+    perl \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -39,7 +45,7 @@ RUN mkdir -p /app/public/uploads /app/public/generated
 FROM base AS runner
 WORKDIR /app
 
-# Install runtime dependencies for Sharp, SVG text rendering, and exiftool
+# Install runtime dependencies for Sharp, SVG text rendering, exiftool, and Puppeteer
 RUN apk add --no-cache \
     fontconfig \
     ttf-dejavu \
@@ -49,9 +55,17 @@ RUN apk add --no-cache \
     cairo \
     pango \
     exiftool \
-    perl
+    perl \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
 
 ENV NODE_ENV=production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
