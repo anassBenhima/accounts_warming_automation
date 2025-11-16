@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function NotificationToggle() {
@@ -9,6 +9,8 @@ export default function NotificationToggle() {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [testDelaySeconds, setTestDelaySeconds] = useState(5);
+  const [isSendingTest, setIsSendingTest] = useState(false);
 
   // Check notification status on mount
   useEffect(() => {
@@ -200,6 +202,58 @@ export default function NotificationToggle() {
     }
   };
 
+  const handleTestNotification = async () => {
+    if (!enabled) {
+      toast.error('Please enable notifications first');
+      return;
+    }
+
+    if (testDelaySeconds < 0 || testDelaySeconds > 300) {
+      toast.error('Delay must be between 0 and 300 seconds');
+      return;
+    }
+
+    setIsSendingTest(true);
+
+    try {
+      toast.loading(`Sending test notification in ${testDelaySeconds} second${testDelaySeconds !== 1 ? 's' : ''}...`);
+
+      const response = await fetch('/api/push/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          delaySeconds: testDelaySeconds,
+        }),
+      });
+
+      if (response.status === 401) {
+        const data = await response.json();
+        if (data.code === 'SESSION_EXPIRED') {
+          toast.error('Your session has expired. Please logout and login again.');
+          return;
+        }
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to send test notification');
+      }
+
+      const data = await response.json();
+      toast.dismiss();
+      toast.success(`Test notification sent successfully to ${data.sentTo} device${data.sentTo !== 1 ? 's' : ''}!`);
+    } catch (error) {
+      toast.dismiss();
+      console.error('Failed to send test notification:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send test notification';
+      toast.error(errorMessage);
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
+
   return (
     <div className="p-3 md:p-4 border-t border-gray-200">
       <button
@@ -236,6 +290,51 @@ export default function NotificationToggle() {
         <p className="text-xs text-red-600 mt-2 px-3 md:px-4">
           Notifications are blocked. Enable them in browser settings.
         </p>
+      )}
+
+      {/* Test Notification Section */}
+      {enabled && (
+        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Send className="w-4 h-4 text-gray-600" />
+            <h3 className="text-sm font-medium text-gray-700">Test Notification</h3>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Send a test notification to verify notifications are working
+          </p>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label htmlFor="delay-seconds" className="block text-xs text-gray-600 mb-1">
+                Delay (seconds)
+              </label>
+              <input
+                id="delay-seconds"
+                type="number"
+                min="0"
+                max="300"
+                value={testDelaySeconds}
+                onChange={(e) => setTestDelaySeconds(Number(e.target.value))}
+                disabled={isSendingTest}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="5"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={handleTestNotification}
+                disabled={isSendingTest}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                  isSendingTest
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-lg'
+                }`}
+              >
+                <Send className="w-4 h-4" />
+                {isSendingTest ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

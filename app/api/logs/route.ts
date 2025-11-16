@@ -14,12 +14,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const level = searchParams.get('level') as LogLevel | null;
     const logModule = searchParams.get('module') as LogModule | null;
+    const resourceId = searchParams.get('resourceId');
 
     const logs = await prisma.systemLog.findMany({
       where: {
         userId: session.user.id, // Filter logs by current user
         ...(level && { level }),
         ...(logModule && { module: logModule }),
+        ...(resourceId && { resourceId }),
       },
       orderBy: {
         createdAt: 'desc',
