@@ -98,6 +98,7 @@ enum TemplateType {
   LOGO                 // Logo with position and size
   TEXT                 // Text at center full width
   TEXT_WITH_BACKGROUND // Text with full-width background bar (top, center, or bottom)
+  HTML_TEMPLATE        // HTML template with image placeholders
 }
 
 model Template {
