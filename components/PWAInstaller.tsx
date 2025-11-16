@@ -1,14 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Download } from 'lucide-react';
+import { X, Download, Share } from 'lucide-react';
 
 export default function PWAInstaller() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    // Detect iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(iOS);
+
+    // Check if running in standalone mode
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+                      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+
     // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -29,12 +40,30 @@ export default function PWAInstaller() {
     }
 
     // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (standalone) {
       setIsInstalled(true);
       return;
     }
 
-    // Listen for the beforeinstallprompt event
+    // For iOS, show manual install instructions after a delay
+    if (iOS && !standalone) {
+      // Check if dismissed recently
+      const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+      if (dismissedTime) {
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        if (Date.now() - parseInt(dismissedTime) < sevenDays) {
+          return;
+        }
+      }
+
+      // Show iOS install prompt after 3 seconds
+      setTimeout(() => {
+        setShowInstallPrompt(true);
+      }, 3000);
+      return;
+    }
+
+    // Listen for the beforeinstallprompt event (non-iOS)
     const handleBeforeInstallPrompt = (e: Event) => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
@@ -91,19 +120,60 @@ export default function PWAInstaller() {
   };
 
   // Don't show if already installed or no prompt available
-  if (isInstalled || !showInstallPrompt) {
+  if (isInstalled || isStandalone || !showInstallPrompt) {
     return null;
   }
 
-  // Check if dismissed recently (within 7 days)
-  const dismissedTime = localStorage.getItem('pwa-install-dismissed');
-  if (dismissedTime) {
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    if (Date.now() - parseInt(dismissedTime) < sevenDays) {
-      return null;
-    }
+  // iOS install instructions
+  if (isIOS) {
+    return (
+      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-slide-up">
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl shadow-2xl p-4 border border-red-500">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-1">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-3xl">🔥</span>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-lg mb-1">Install Warming App</h3>
+              <p className="text-sm text-red-50 mb-3">
+                Install for instant notifications and offline access!
+              </p>
+              <div className="bg-red-700 bg-opacity-50 rounded-lg p-3 mb-3 text-sm">
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="flex-shrink-0 mt-0.5">1.</span>
+                  <span>Tap the <Share className="w-4 h-4 inline mx-1" /> Share button below</span>
+                </div>
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="flex-shrink-0 mt-0.5">2.</span>
+                  <span>Scroll and tap "Add to Home Screen"</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-0.5">3.</span>
+                  <span>Tap "Add" in the top right</span>
+                </div>
+              </div>
+              <button
+                onClick={handleDismiss}
+                className="w-full bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-all"
+              >
+                Got it!
+              </button>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="flex-shrink-0 text-white hover:text-red-200 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
+  // Desktop/Android install prompt
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-slide-up">
       <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl shadow-2xl p-4 border border-red-500">

@@ -23,6 +23,19 @@ export default function NotificationToggle() {
   const checkNotificationStatus = async () => {
     try {
       const response = await fetch('/api/push/toggle');
+
+      if (response.status === 401) {
+        const data = await response.json();
+        if (data.code === 'SESSION_EXPIRED') {
+          console.warn('Session expired - user needs to login again');
+          // Don't show error toast on component mount, just log it
+          setEnabled(false);
+          setHasSubscription(false);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       if (response.ok) {
         const data = await response.json();
         setEnabled(data.enabled);
@@ -156,8 +169,18 @@ export default function NotificationToggle() {
         }),
       });
 
+      if (response.status === 401) {
+        const data = await response.json();
+        if (data.code === 'SESSION_EXPIRED') {
+          toast.error('Your session has expired. Please logout and login again.');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to toggle notifications');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to toggle notifications');
       }
 
       const data = await response.json();
@@ -170,7 +193,8 @@ export default function NotificationToggle() {
       );
     } catch (error) {
       console.error('Failed to toggle notifications:', error);
-      toast.error('Failed to update notification settings');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update notification settings';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -46,8 +46,13 @@ export async function PATCH(request: NextRequest) {
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Handle session errors gracefully
+    if (!session || (session as any).error === 'RefreshTokenError') {
+      return NextResponse.json({
+        error: 'Session expired. Please login again.',
+        code: 'SESSION_EXPIRED'
+      }, { status: 401 });
     }
 
     // Get user's subscription status
@@ -67,8 +72,28 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error getting notification status:', error);
+
+    // More specific error handling
+    if (error instanceof Error) {
+      // Database connection errors
+      if (error.message.includes('database') || error.message.includes('connection')) {
+        return NextResponse.json(
+          { error: 'Database connection error. Please try again.', code: 'DB_ERROR' },
+          { status: 503 }
+        );
+      }
+
+      // Prisma errors
+      if (error.message.includes('Prisma')) {
+        return NextResponse.json(
+          { error: 'Database query failed. Please try again.', code: 'QUERY_ERROR' },
+          { status: 500 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Failed to get notification status' },
+      { error: 'Failed to get notification status', code: 'UNKNOWN_ERROR' },
       { status: 500 }
     );
   }
