@@ -624,12 +624,61 @@ async function applyTemplate(imagePath: string, template: any): Promise<string> 
     // Step 1: Create the composited image
     await baseImage.composite(composites).toFile(tempPath);
 
-    // Step 2: Re-export the image to strip all metadata and create a fresh file
+    // Step 2: Apply humanizing effects to make image appear more natural
+    const processedFilename = `processed_${randomUUID()}.png`;
+    const processedPath = path.join(process.cwd(), 'public', 'generated', processedFilename);
+
+    // Create a semi-transparent white overlay layer (0.5% opacity for subtle effect)
+    const overlayLayer = await sharp({
+      create: {
+        width: metadata.width!,
+        height: metadata.height!,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 0.005 }, // 0.5% opacity
+      },
+    })
+      .png()
+      .toBuffer();
+
+    // Create Gaussian noise layer (15% intensity)
+    // Generate random noise buffer
+    const noiseBuffer = Buffer.alloc(metadata.width! * metadata.height! * 4);
+    for (let i = 0; i < noiseBuffer.length; i += 4) {
+      // Random grayscale noise with 15% intensity
+      const noise = Math.floor((Math.random() - 0.5) * 255 * 0.15);
+      noiseBuffer[i] = 128 + noise;     // R
+      noiseBuffer[i + 1] = 128 + noise; // G
+      noiseBuffer[i + 2] = 128 + noise; // B
+      noiseBuffer[i + 3] = 25;          // Alpha (~10% for subtle blend)
+    }
+
+    const noiseLayer = await sharp(noiseBuffer, {
+      raw: {
+        width: metadata.width!,
+        height: metadata.height!,
+        channels: 4,
+      },
+    })
+      .png()
+      .toBuffer();
+
+    // Apply all effects: overlay layer, noise, and contrast adjustment
+    await sharp(tempPath)
+      .composite([
+        { input: overlayLayer, blend: 'over' },
+        { input: noiseLayer, blend: 'overlay' },
+      ])
+      .modulate({
+        brightness: 1.01, // 1% brightness increase for subtle contrast boost
+      })
+      .toFile(processedPath);
+
+    // Step 3: Re-export the image to strip all metadata and create a fresh file
     // This ensures the image is 100% humanized with no AI generation metadata
     const outputFilename = `final_${randomUUID()}.png`;
     const outputPath = path.join(process.cwd(), 'public', 'generated', outputFilename);
 
-    await sharp(tempPath)
+    await sharp(processedPath)
       .withMetadata({}) // Strip all existing metadata
       .png({
         quality: 100,
@@ -638,12 +687,13 @@ async function applyTemplate(imagePath: string, template: any): Promise<string> 
       })
       .toFile(outputPath);
 
-    // Step 3: Delete the temporary file
+    // Step 4: Delete the temporary files
     try {
       const { unlink } = await import('fs/promises');
       await unlink(tempPath);
+      await unlink(processedPath);
     } catch (err) {
-      console.error('Error deleting temp file:', err);
+      console.error('Error deleting temp files:', err);
     }
 
     return `/generated/${outputFilename}`;
