@@ -26,6 +26,9 @@ export default function BulkGenerationPage() {
   const [imageGenApiKeyId, setImageGenApiKeyId] = useState('');
   const [keywordSearchApiKeyId, setKeywordSearchApiKeyId] = useState('');
   const [imageDescApiKeyId, setImageDescApiKeyId] = useState('');
+  const [imageGenModel, setImageGenModel] = useState('');
+  const [keywordSearchModel, setKeywordSearchModel] = useState('');
+  const [imageDescModel, setImageDescModel] = useState('');
   const [imageWidth, setImageWidth] = useState(1000);
   const [imageHeight, setImageHeight] = useState(1500);
   const [rows, setRows] = useState<Row[]>([
@@ -46,11 +49,15 @@ export default function BulkGenerationPage() {
         // Auto-select first key of each type
         const falKey = data.find((k: ApiKey) => k.type === 'fal');
         const openaiKey = data.find((k: ApiKey) => k.type === 'openai');
+        const deepseekKey = data.find((k: ApiKey) => k.type === 'deepseek');
 
         if (falKey) setImageGenApiKeyId(falKey.id);
         if (openaiKey) {
           setKeywordSearchApiKeyId(openaiKey.id);
           setImageDescApiKeyId(openaiKey.id);
+        } else if (deepseekKey) {
+          setKeywordSearchApiKeyId(deepseekKey.id);
+          setImageDescApiKeyId(deepseekKey.id);
         }
       }
     } catch (error) {
@@ -110,6 +117,9 @@ export default function BulkGenerationPage() {
           imageGenApiKeyId,
           keywordSearchApiKeyId,
           imageDescApiKeyId,
+          imageGenModel: imageGenModel.trim() || null,
+          keywordSearchModel: keywordSearchModel.trim() || null,
+          imageDescModel: imageDescModel.trim() || null,
           imageWidth,
           imageHeight,
           rows: validRows.map((row) => ({
@@ -137,6 +147,8 @@ export default function BulkGenerationPage() {
 
   const falKeys = apiKeys.filter((k) => k.type === 'fal');
   const openaiKeys = apiKeys.filter((k) => k.type === 'openai');
+  const deepseekKeys = apiKeys.filter((k) => k.type === 'deepseek');
+  const llmKeys = [...openaiKeys, ...deepseekKeys]; // Combined LLM keys for keyword search and image description
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-8">
@@ -195,9 +207,9 @@ export default function BulkGenerationPage() {
               required
             >
               <option value="">Select API Key</option>
-              {openaiKeys.map((key) => (
+              {llmKeys.map((key) => (
                 <option key={key.id} value={key.id}>
-                  {key.name}
+                  {key.name} ({key.type})
                 </option>
               ))}
             </select>
@@ -214,12 +226,60 @@ export default function BulkGenerationPage() {
               required
             >
               <option value="">Select API Key</option>
-              {openaiKeys.map((key) => (
+              {llmKeys.map((key) => (
                 <option key={key.id} value={key.id}>
-                  {key.name}
+                  {key.name} ({key.type})
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Model Names */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Image Generation Model
+              <span className="text-gray-500 text-xs ml-1">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              value={imageGenModel}
+              onChange={(e) => setImageGenModel(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
+              placeholder="e.g., fal-ai/flux-pro/v1.1"
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Keyword Search Model
+              <span className="text-gray-500 text-xs ml-1">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              value={keywordSearchModel}
+              onChange={(e) => setKeywordSearchModel(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
+              placeholder="e.g., gpt-4o"
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Image Description Model
+              <span className="text-gray-500 text-xs ml-1">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              value={imageDescModel}
+              onChange={(e) => setImageDescModel(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
+              placeholder="e.g., gpt-4o"
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
         </div>
 

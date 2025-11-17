@@ -346,6 +346,11 @@ model BulkGeneration {
   keywordSearchApiKeyId String
   imageDescApiKeyId     String
 
+  // Model names
+  imageGenModel         String?  // Model name for image generation
+  keywordSearchModel    String?  // Model name for keyword search
+  imageDescModel        String?  // Model name for image description
+
   // Image dimensions
   imageWidth  Int @default(1000)
   imageHeight Int @default(1500)

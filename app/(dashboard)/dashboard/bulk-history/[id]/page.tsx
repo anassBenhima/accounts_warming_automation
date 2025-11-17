@@ -77,26 +77,57 @@ export default function BulkHistoryDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this bulk generation?')) {
-      return;
-    }
+    if (!bulkGeneration) return;
 
-    try {
-      const response = await fetch(`/api/bulk-generations/${id}`, {
-        method: 'DELETE',
-      });
+    // Custom confirmation using toast
+    const confirmToast = toast(
+      (t) => (
+        <div className="flex flex-col gap-3">
+          <p className="font-medium text-gray-900">Delete Bulk Generation?</p>
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete "{bulkGeneration.name}"? This action cannot be undone.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+              }}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const response = await fetch(`/api/bulk-generations/${id}`, {
+                    method: 'DELETE',
+                  });
 
-      if (response.ok) {
-        toast.success('Bulk generation deleted');
-        router.push('/dashboard/bulk-history');
-      } else {
-        const data = await response.json();
-        toast.error(data.error || 'Failed to delete');
+                  if (response.ok) {
+                    toast.success('Bulk generation deleted');
+                    router.push('/dashboard/bulk-history');
+                  } else {
+                    const data = await response.json();
+                    toast.error(data.error || 'Failed to delete');
+                  }
+                } catch (error) {
+                  console.error('Error deleting bulk generation:', error);
+                  toast.error('Failed to delete');
+                }
+              }}
+              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: 'top-center',
       }
-    } catch (error) {
-      console.error('Error deleting bulk generation:', error);
-      toast.error('Failed to delete');
-    }
+    );
   };
 
   const exportToCSV = () => {

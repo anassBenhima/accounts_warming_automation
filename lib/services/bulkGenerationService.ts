@@ -149,11 +149,16 @@ async function processRow(
     throw new Error('One or more API keys not found');
   }
 
+  // Get model names from bulk generation config or API key defaults
+  const imageDescModel = bulkGeneration.imageDescModel || imageDescApiKey.modelName || 'gpt-4o';
+  const keywordSearchModel = bulkGeneration.keywordSearchModel || keywordSearchApiKey.modelName || 'gpt-4o';
+  const imageGenModel = bulkGeneration.imageGenModel || imageGenApiKey.modelName || 'fal-ai/flux-pro/v1.1';
+
   // Step 1: Describe the image
   const imageDescription = await describeImage(
     row.imageUrl,
     imageDescApiKey.apiKey,
-    imageDescApiKey.modelName || 'gpt-4o'
+    imageDescModel
   );
 
   // Step 2: Generate keyword data using the keyword search API
@@ -161,7 +166,7 @@ async function processRow(
     row.keywords,
     imageDescription,
     keywordSearchApiKey.apiKey,
-    keywordSearchApiKey.modelName || 'gpt-4-turbo'
+    keywordSearchModel
   );
 
   // Step 3: Generate images for each quantity
@@ -174,7 +179,7 @@ async function processRow(
         pinData.title,
         pinData.description,
         imageGenApiKey.apiKey,
-        imageGenApiKey.modelName || 'fal-ai/flux-pro/v1.1',
+        imageGenModel,
         bulkGeneration.imageWidth,
         bulkGeneration.imageHeight
       );
