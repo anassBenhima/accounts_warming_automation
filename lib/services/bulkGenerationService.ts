@@ -14,8 +14,6 @@ interface BulkGenerationRow {
  * Process a single bulk generation batch
  */
 export async function processBulkGeneration(bulkGenerationId: string): Promise<void> {
-  const logger = createUserLogger('system');
-
   try {
     // Update status to PROCESSING
     await prisma.bulkGeneration.update({
@@ -37,6 +35,9 @@ export async function processBulkGeneration(bulkGenerationId: string): Promise<v
     if (!bulkGeneration) {
       throw new Error('Bulk generation not found');
     }
+
+    // Create logger with actual user ID
+    const logger = createUserLogger(bulkGeneration.userId);
 
     // Process each row sequentially
     for (const row of bulkGeneration.rows) {
@@ -87,7 +88,7 @@ export async function processBulkGeneration(bulkGenerationId: string): Promise<v
     console.error('Error processing bulk generation:', error);
 
     // Mark as failed
-    await prisma.bulkGeneration.update({
+    const failedBulkGen = await prisma.bulkGeneration.update({
       where: { id: bulkGenerationId },
       data: {
         status: 'FAILED',
@@ -95,13 +96,19 @@ export async function processBulkGeneration(bulkGenerationId: string): Promise<v
       },
     });
 
-    await logger.error({
-      module: 'GENERATION',
-      action: 'bulk_generation_failed',
-      message: 'Bulk generation failed',
-      resourceId: bulkGenerationId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // Create logger for error logging
+    try {
+      const errorLogger = createUserLogger(failedBulkGen.userId);
+      await errorLogger.error({
+        module: 'GENERATION',
+        action: 'bulk_generation_failed',
+        message: 'Bulk generation failed',
+        resourceId: bulkGenerationId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } catch (logError) {
+      console.error('Error logging failure:', logError);
+    }
   }
 }
 
@@ -146,7 +153,7 @@ async function processRow(
   const imageDescription = await describeImage(
     row.imageUrl,
     imageDescApiKey.apiKey,
-    imageDescApiKey.modelName || 'gpt-4-vision-preview'
+    imageDescApiKey.modelName || 'gpt-4o'
   );
 
   // Step 2: Generate keyword data using the keyword search API
