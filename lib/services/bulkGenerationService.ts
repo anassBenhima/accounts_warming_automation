@@ -77,7 +77,7 @@ export async function processBulkGeneration(bulkGenerationId: string): Promise<v
       tag: `bulk-generation-${bulkGenerationId}`,
     });
 
-    await logger.track({
+    await logger.success({
       module: 'GENERATION',
       action: 'bulk_generation_complete',
       message: `Bulk generation completed: ${bulkGeneration.name}`,
@@ -95,7 +95,7 @@ export async function processBulkGeneration(bulkGenerationId: string): Promise<v
       },
     });
 
-    await logger.track({
+    await logger.error({
       module: 'GENERATION',
       action: 'bulk_generation_failed',
       message: 'Bulk generation failed',

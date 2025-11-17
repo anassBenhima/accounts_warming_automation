@@ -25,14 +25,18 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const ext = path.extname(file.name);
     const filename = `${randomUUID()}${ext}`;
-    const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
+
+    // Determine directory based on file type
+    const isHtml = ext.toLowerCase() === '.html';
+    const directory = isHtml ? 'templates' : 'uploads';
+    const filepath = path.join(process.cwd(), 'public', directory, filename);
 
     // Write file
     await writeFile(filepath, buffer);
 
     return NextResponse.json({
       filename,
-      url: `/uploads/${filename}`,
+      url: `/${directory}/${filename}`,
     });
   } catch (error) {
     console.error('Error uploading file:', error);

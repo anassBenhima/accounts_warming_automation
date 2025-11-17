@@ -107,7 +107,7 @@ class HTMLTemplateService {
 
       // Generate screenshot
       const screenshotFilename = `html_template_${randomUUID()}.png`;
-      const screenshotPath = path.join(process.cwd(), 'public', 'generated', screenshotFilename);
+      const screenshotPath = path.join(process.cwd(), 'public', 'generated', screenshotFilename) as `${string}.png`;
 
       await page.screenshot({
         path: screenshotPath,

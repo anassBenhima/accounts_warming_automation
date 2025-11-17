@@ -169,6 +169,8 @@ export default function TemplatesPage() {
         return 'Text';
       case 'TEXT_WITH_BACKGROUND':
         return 'Text with Background';
+      case 'HTML_TEMPLATE':
+        return 'HTML Template';
       default:
         return type;
     }
@@ -186,6 +188,8 @@ export default function TemplatesPage() {
         return 'bg-yellow-100 text-yellow-800';
       case 'TEXT_WITH_BACKGROUND':
         return 'bg-orange-100 text-orange-800';
+      case 'HTML_TEMPLATE':
+        return 'bg-pink-100 text-pink-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -232,7 +236,21 @@ export default function TemplatesPage() {
             >
               {/* Preview */}
               <div className="bg-gray-100 h-40 md:h-48 flex items-center justify-center relative">
-                {template.filePath && (
+                {template.type === 'HTML_TEMPLATE' && template.previewPath && (
+                  <Image
+                    src={template.previewPath}
+                    alt={template.name}
+                    fill
+                    className="object-contain p-3 md:p-4"
+                  />
+                )}
+                {template.type === 'HTML_TEMPLATE' && !template.previewPath && (
+                  <div className="text-center px-4">
+                    <div className="text-4xl mb-2">📄</div>
+                    <p className="text-xs text-gray-500">HTML Template</p>
+                  </div>
+                )}
+                {template.type !== 'HTML_TEMPLATE' && template.type !== 'TEXT' && template.type !== 'TEXT_WITH_BACKGROUND' && template.filePath && (
                   <Image
                     src={template.filePath}
                     alt={template.name}
@@ -361,18 +379,19 @@ export default function TemplatesPage() {
                   <option value="LOGO">Logo</option>
                   <option value="TEXT">Text</option>
                   <option value="TEXT_WITH_BACKGROUND">Text with Background</option>
+                  <option value="HTML_TEMPLATE">HTML Template</option>
                 </select>
               </div>
 
               {formData.type !== 'TEXT' && formData.type !== 'TEXT_WITH_BACKGROUND' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload Image
+                    {formData.type === 'HTML_TEMPLATE' ? 'Upload HTML Template' : 'Upload Image'}
                   </label>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept={formData.type === 'HTML_TEMPLATE' ? '.html' : 'image/*'}
                     onChange={handleFileUpload}
                     className="hidden"
                   />
@@ -383,9 +402,11 @@ export default function TemplatesPage() {
                     className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-all flex items-center justify-center gap-2 text-gray-600"
                   >
                     <Upload className="w-5 h-5" />
-                    {uploading ? 'Uploading...' : formData.filePath ? 'Change Image' : 'Upload Image'}
+                    {uploading ? 'Uploading...' : formData.filePath ?
+                      (formData.type === 'HTML_TEMPLATE' ? 'Change HTML File' : 'Change Image') :
+                      (formData.type === 'HTML_TEMPLATE' ? 'Upload HTML File' : 'Upload Image')}
                   </button>
-                  {formData.filePath && (
+                  {formData.filePath && formData.type !== 'HTML_TEMPLATE' && (
                     <div className="mt-2 relative h-32 bg-gray-100 rounded-lg overflow-hidden">
                       <Image
                         src={formData.filePath}
@@ -393,6 +414,16 @@ export default function TemplatesPage() {
                         fill
                         className="object-contain"
                       />
+                    </div>
+                  )}
+                  {formData.filePath && formData.type === 'HTML_TEMPLATE' && (
+                    <div className="mt-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 font-medium">
+                        HTML template uploaded: {formData.filePath.split('/').pop()}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Use placeholders like {'{image_1}'}, {'{image_2}'} in your HTML for dynamic images
+                      </p>
                     </div>
                   )}
                 </div>
