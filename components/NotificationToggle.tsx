@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, BellOff, Send } from 'lucide-react';
+import { Bell, BellOff, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function NotificationToggle() {
@@ -11,6 +11,7 @@ export default function NotificationToggle() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [testDelaySeconds, setTestDelaySeconds] = useState(5);
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Check notification status on mount
   useEffect(() => {
@@ -256,84 +257,116 @@ export default function NotificationToggle() {
 
   return (
     <div className="p-3 md:p-4 border-t border-gray-200">
-      <button
-        onClick={handleToggle}
-        disabled={isLoading}
-        className={`flex items-center justify-between w-full px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all text-sm md:text-base ${
-          enabled
-            ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
-            : 'text-gray-700 hover:bg-gray-100'
-        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-      >
-        <div className="flex items-center gap-3">
-          {enabled ? (
-            <Bell className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-          ) : (
-            <BellOff className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-          )}
-          <span className="font-medium">Notifications</span>
-        </div>
-
-        {/* Toggle switch */}
-        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          enabled ? 'bg-white' : 'bg-gray-300'
-        }`}>
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-              enabled ? 'translate-x-6 bg-red-600' : 'translate-x-1 bg-white'
-            }`}
-          />
-        </div>
-      </button>
-
-      {permission === 'denied' && (
-        <p className="text-xs text-red-600 mt-2 px-3 md:px-4">
-          Notifications are blocked. Enable them in browser settings.
-        </p>
-      )}
-
-      {/* Test Notification Section */}
-      {enabled && (
-        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <Send className="w-4 h-4 text-gray-600" />
-            <h3 className="text-sm font-medium text-gray-700">Test Notification</h3>
+      {/* Header - Always visible */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            {enabled ? (
+              <Bell className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 text-red-600" />
+            ) : (
+              <BellOff className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            )}
+            <span className="font-medium text-sm md:text-base">Notifications</span>
           </div>
-          <p className="text-xs text-gray-500 mb-3">
-            Send a test notification to verify notifications are working
-          </p>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label htmlFor="delay-seconds" className="block text-xs text-gray-600 mb-1">
-                Delay (seconds)
-              </label>
-              <input
-                id="delay-seconds"
-                type="number"
-                min="0"
-                max="300"
-                value={testDelaySeconds}
-                onChange={(e) => setTestDelaySeconds(Number(e.target.value))}
-                disabled={isSendingTest}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="5"
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Status indicator */}
+        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+          enabled
+            ? 'bg-green-100 text-green-700'
+            : 'bg-gray-100 text-gray-600'
+        }`}>
+          {enabled ? 'On' : 'Off'}
+        </div>
+      </div>
+
+      {/* Collapsible content */}
+      {isExpanded && (
+        <div className="space-y-3 mt-3">
+          {/* Toggle button */}
+          <button
+            onClick={handleToggle}
+            disabled={isLoading}
+            className={`flex items-center justify-between w-full px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all text-sm md:text-base ${
+              enabled
+                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
+            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span className="font-medium">
+              {enabled ? 'Disable' : 'Enable'} Notifications
+            </span>
+
+            {/* Toggle switch */}
+            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              enabled ? 'bg-white' : 'bg-gray-300'
+            }`}>
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                  enabled ? 'translate-x-6 bg-red-600' : 'translate-x-1 bg-white'
+                }`}
               />
             </div>
-            <div className="flex items-end">
-              <button
-                onClick={handleTestNotification}
-                disabled={isSendingTest}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
-                  isSendingTest
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-lg'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-                {isSendingTest ? 'Sending...' : 'Send'}
-              </button>
+          </button>
+
+          {permission === 'denied' && (
+            <p className="text-xs text-red-600 px-3 md:px-4 py-2 bg-red-50 rounded-lg">
+              Notifications are blocked. Enable them in browser settings.
+            </p>
+          )}
+
+          {/* Test Notification Section */}
+          {enabled && (
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Send className="w-4 h-4 text-gray-600" />
+                <h3 className="text-sm font-medium text-gray-700">Test Notification</h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Send a test notification to verify notifications are working
+              </p>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label htmlFor="delay-seconds" className="block text-xs text-gray-600 mb-1">
+                    Delay (seconds)
+                  </label>
+                  <input
+                    id="delay-seconds"
+                    type="number"
+                    min="0"
+                    max="300"
+                    value={testDelaySeconds}
+                    onChange={(e) => setTestDelaySeconds(Number(e.target.value))}
+                    disabled={isSendingTest}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="5"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleTestNotification}
+                    disabled={isSendingTest}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                      isSendingTest
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-lg'
+                    }`}
+                  >
+                    <Send className="w-4 h-4" />
+                    {isSendingTest ? 'Sending...' : 'Send'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
