@@ -17,6 +17,8 @@ import {
   FileText as LogsIcon,
   Menu,
   X,
+  Layers,
+  Archive,
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
@@ -26,6 +28,8 @@ import SessionErrorHandler from '@/components/SessionErrorHandler';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'History', href: '/dashboard/history', icon: History },
+  { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers },
+  { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive },
   { name: 'System Logs', href: '/dashboard/logs', icon: LogsIcon },
   { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
   { name: 'Image to Prompt', href: '/dashboard/image-to-prompt', icon: FileText },
