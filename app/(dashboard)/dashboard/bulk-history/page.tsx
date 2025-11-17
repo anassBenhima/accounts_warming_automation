@@ -101,23 +101,23 @@ export default function BulkHistoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Bulk Generation History</h1>
-          <p className="text-gray-600 mt-2">View and manage your bulk generations</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bulk Generation History</h1>
+          <p className="text-sm md:text-base text-gray-900 mt-2">View and manage your bulk generations</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <button
             onClick={fetchBulkGenerations}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900 text-sm md:text-base w-full md:w-auto"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
             Refresh
           </button>
           <button
             onClick={() => router.push('/dashboard/bulk-generation')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base w-full md:w-auto"
           >
             New Bulk Generation
           </button>
@@ -126,10 +126,10 @@ export default function BulkHistoryPage() {
 
       {bulkGenerations.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <p className="text-gray-500 mb-4">No bulk generations yet</p>
+          <p className="text-sm md:text-base text-gray-900 mb-4">No bulk generations yet</p>
           <button
             onClick={() => router.push('/dashboard/bulk-generation')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
           >
             Create Your First Bulk Generation
           </button>
@@ -139,14 +139,14 @@ export default function BulkHistoryPage() {
           {bulkGenerations.map((bulkGen) => (
             <div
               key={bulkGen.id}
-              className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+              className="border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">{bulkGen.name}</h3>
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">{bulkGen.name}</h3>
                   <div className="flex items-center gap-2 mb-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                      className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusColor(
                         bulkGen.status
                       )}`}
                     >
@@ -156,50 +156,50 @@ export default function BulkHistoryPage() {
                       <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-900">
                     Created {format(new Date(bulkGen.createdAt), 'MMM d, yyyy h:mm a')}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col md:flex-row gap-2">
                   <button
                     onClick={() => router.push(`/dashboard/bulk-history/${bulkGen.id}`)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900 text-sm md:text-base w-full md:w-auto"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4 md:w-5 md:h-5" />
                     View Details
                   </button>
                   <button
                     onClick={() => handleDelete(bulkGen.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg w-full md:w-auto"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Total Rows</p>
-                  <p className="text-2xl font-bold">{bulkGen.totalRows}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-gray-50 rounded-lg p-3 md:p-4">
+                  <p className="text-xs md:text-sm text-gray-900 mb-1">Total Rows</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{bulkGen.totalRows}</p>
                 </div>
 
-                <div className="bg-green-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Completed Rows</p>
-                  <p className="text-2xl font-bold text-green-700">
+                <div className="bg-green-50 rounded-lg p-3 md:p-4">
+                  <p className="text-xs md:text-sm text-gray-900 mb-1">Completed Rows</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-700">
                     {bulkGen.completedRows}
                   </p>
                 </div>
 
-                <div className="bg-red-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Failed Rows</p>
-                  <p className="text-2xl font-bold text-red-700">
+                <div className="bg-red-50 rounded-lg p-3 md:p-4">
+                  <p className="text-xs md:text-sm text-gray-900 mb-1">Failed Rows</p>
+                  <p className="text-xl md:text-2xl font-bold text-red-700">
                     {bulkGen.failedRows}
                   </p>
                 </div>
 
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Total Pins</p>
-                  <p className="text-2xl font-bold text-blue-700">
+                <div className="bg-blue-50 rounded-lg p-3 md:p-4">
+                  <p className="text-xs md:text-sm text-gray-900 mb-1">Total Pins</p>
+                  <p className="text-xl md:text-2xl font-bold text-blue-700">
                     {getTotalPins(bulkGen)}
                   </p>
                 </div>
@@ -207,7 +207,7 @@ export default function BulkHistoryPage() {
 
               {bulkGen.status === 'PROCESSING' && (
                 <div className="mt-4">
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <div className="flex items-center justify-between text-xs md:text-sm text-gray-900 mb-2">
                     <span>Progress</span>
                     <span>
                       {bulkGen.completedRows} / {bulkGen.totalRows} rows

@@ -139,25 +139,25 @@ export default function BulkGenerationPage() {
   const openaiKeys = apiKeys.filter((k) => k.type === 'openai');
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Bulk Generation</h1>
-        <p className="text-gray-600 mt-2">
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bulk Generation</h1>
+        <p className="text-sm md:text-base text-gray-600 mt-2">
           Generate multiple Pinterest pins from a list of keywords and images
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label className="block text-sm font-medium text-gray-900 mb-2">
             Batch Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
             placeholder="e.g., Holiday Recipes Batch"
             required
           />
@@ -166,13 +166,13 @@ export default function BulkGenerationPage() {
         {/* API Keys */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Image Generation API <span className="text-red-500">*</span>
             </label>
             <select
               value={imageGenApiKeyId}
               onChange={(e) => setImageGenApiKeyId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               required
             >
               <option value="">Select API Key</option>
@@ -185,13 +185,13 @@ export default function BulkGenerationPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Keyword Search API <span className="text-red-500">*</span>
             </label>
             <select
               value={keywordSearchApiKeyId}
               onChange={(e) => setKeywordSearchApiKeyId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               required
             >
               <option value="">Select API Key</option>
@@ -204,13 +204,13 @@ export default function BulkGenerationPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Image Description API <span className="text-red-500">*</span>
             </label>
             <select
               value={imageDescApiKeyId}
               onChange={(e) => setImageDescApiKeyId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               required
             >
               <option value="">Select API Key</option>
@@ -226,24 +226,24 @@ export default function BulkGenerationPage() {
         {/* Image Dimensions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Image Width (px)</label>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Image Width (px)</label>
             <input
               type="number"
               value={imageWidth}
               onChange={(e) => setImageWidth(parseInt(e.target.value, 10))}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               min="100"
               max="2000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Image Height (px)</label>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Image Height (px)</label>
             <input
               type="number"
               value={imageHeight}
               onChange={(e) => setImageHeight(parseInt(e.target.value, 10))}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               min="100"
               max="3000"
             />
@@ -252,14 +252,14 @@ export default function BulkGenerationPage() {
 
         {/* Data Table */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <label className="block text-sm font-medium">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4">
+            <label className="block text-sm font-medium text-gray-900">
               Data Rows <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
               onClick={addRow}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base w-full md:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               Add Row
@@ -270,50 +270,50 @@ export default function BulkGenerationPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Keywords</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Image URL</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Quantity</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium">Actions</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Keywords</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Image URL</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Quantity</th>
+                  <th className="px-2 md:px-4 py-3 text-center text-xs md:text-sm font-medium text-gray-900">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td className="px-4 py-3">
+                    <td className="px-2 md:px-4 py-3">
                       <input
                         type="text"
                         value={row.keywords}
                         onChange={(e) =>
                           updateRow(row.id, 'keywords', e.target.value)
                         }
-                        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         placeholder="recipe, cooking, food"
                       />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 md:px-4 py-3">
                       <input
                         type="url"
                         value={row.imageUrl}
                         onChange={(e) =>
                           updateRow(row.id, 'imageUrl', e.target.value)
                         }
-                        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         placeholder="https://example.com/image.jpg"
                       />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 md:px-4 py-3">
                       <input
                         type="number"
                         value={row.quantity}
                         onChange={(e) =>
                           updateRow(row.id, 'quantity', parseInt(e.target.value, 10))
                         }
-                        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         min="1"
                         max="100"
                       />
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-2 md:px-4 py-3 text-center">
                       <button
                         type="button"
                         onClick={() => removeRow(row.id)}
@@ -331,11 +331,11 @@ export default function BulkGenerationPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm md:text-base w-full md:w-auto"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Creating...' : 'Start Bulk Generation'}
@@ -344,7 +344,7 @@ export default function BulkGenerationPage() {
           <button
             type="button"
             onClick={() => router.push('/dashboard/bulk-history')}
-            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 text-sm md:text-base w-full md:w-auto"
           >
             View History
           </button>

@@ -454,10 +454,10 @@ export default function HistoryPage() {
 
                     {/* Template Selector */}
                     <div className="mb-3">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <label className="block text-xs md:text-sm font-medium text-gray-900 mb-2">
                         Change Template
                       </label>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col md:flex-row gap-3 md:gap-4">
                         <select
                           value={selectedTemplates[image.id] || image.templateId || ''}
                           onChange={(e) =>
@@ -466,7 +466,7 @@ export default function HistoryPage() {
                               [image.id]: e.target.value,
                             })
                           }
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs md:text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           disabled={changingTemplate[image.id]}
                         >
                           <option value="">Select a template</option>
@@ -488,17 +488,17 @@ export default function HistoryPage() {
                             !selectedTemplates[image.id] ||
                             selectedTemplates[image.id] === image.templateId
                           }
-                          className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap"
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto"
                         >
                           {changingTemplate[image.id] ? (
                             <>
                               <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              <span className="hidden sm:inline">Saving...</span>
+                              <span>Changing...</span>
                             </>
                           ) : (
                             <>
                               <Edit className="w-3 h-3 md:w-4 md:h-4" />
-                              Apply
+                              Change
                             </>
                           )}
                         </button>
