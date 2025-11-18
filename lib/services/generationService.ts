@@ -125,11 +125,11 @@ export async function processGeneration(generationId: string) {
         );
 
         // Download generated image
-        const originalPath = await downloadImage(generatedImageUrl, `original_${i}`);
+        const originalPath = await downloadImage(generatedImageUrl, pinData.Title);
 
         // Apply random template
         const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-        const finalPath = await applyTemplate(originalPath, randomTemplate);
+        const finalPath = await applyTemplate(originalPath, randomTemplate, pinData.Title);
 
         // Add metadata to image
         await addMetadataToImage(finalPath, {
@@ -485,12 +485,24 @@ async function generateImage(
   }
 }
 
-async function downloadImage(url: string, prefix: string): Promise<string> {
+/**
+ * Sanitize a title to be used as a filename
+ */
+function sanitizeFilename(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    .substring(0, 50); // Limit to 50 characters
+}
+
+async function downloadImage(url: string, title: string): Promise<string> {
   try {
     const response = await axios.get(url, { responseType: 'arraybuffer' });
     const buffer = Buffer.from(response.data);
 
-    const filename = `${prefix}_${randomUUID()}.png`;
+    const sanitizedTitle = sanitizeFilename(title);
+    const filename = `${sanitizedTitle}_${randomUUID().substring(0, 8)}.png`;
     const filepath = path.join(process.cwd(), 'public', 'generated', filename);
 
     await writeFile(filepath, buffer);
@@ -502,7 +514,7 @@ async function downloadImage(url: string, prefix: string): Promise<string> {
   }
 }
 
-async function applyTemplate(imagePath: string, template: any): Promise<string> {
+async function applyTemplate(imagePath: string, template: any, title: string): Promise<string> {
   try {
     const fullImagePath = path.join(process.cwd(), 'public', imagePath);
     const baseImage = sharp(fullImagePath);
@@ -675,7 +687,8 @@ async function applyTemplate(imagePath: string, template: any): Promise<string> 
 
     // Step 3: Re-export the image to strip all metadata and create a fresh file
     // This ensures the image is 100% humanized with no AI generation metadata
-    const outputFilename = `final_${randomUUID()}.png`;
+    const sanitizedTitle = sanitizeFilename(title);
+    const outputFilename = `${sanitizedTitle}_final_${randomUUID().substring(0, 8)}.png`;
     const outputPath = path.join(process.cwd(), 'public', 'generated', outputFilename);
 
     await sharp(processedPath)

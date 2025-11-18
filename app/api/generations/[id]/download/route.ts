@@ -61,7 +61,13 @@ export async function GET(
             const imagePath = path.join(process.cwd(), 'public', image.finalPath);
             if (fs.existsSync(imagePath)) {
               const ext = path.extname(image.finalPath);
-              archive.file(imagePath, { name: `${pinFolder}/image${ext}` });
+              // Sanitize title for filename
+              const sanitizedTitle = image.title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .substring(0, 50);
+              archive.file(imagePath, { name: `${pinFolder}/${sanitizedTitle}${ext}` });
             }
           }
 

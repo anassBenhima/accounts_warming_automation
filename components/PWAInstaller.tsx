@@ -45,17 +45,17 @@ export default function PWAInstaller() {
       return;
     }
 
+    // Check if dismissed recently (24 hours)
+    const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+    if (dismissedTime) {
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (Date.now() - parseInt(dismissedTime) < twentyFourHours) {
+        return;
+      }
+    }
+
     // For iOS, show manual install instructions after a delay
     if (iOS && !standalone) {
-      // Check if dismissed recently
-      const dismissedTime = localStorage.getItem('pwa-install-dismissed');
-      if (dismissedTime) {
-        const sevenDays = 7 * 24 * 60 * 60 * 1000;
-        if (Date.now() - parseInt(dismissedTime) < sevenDays) {
-          return;
-        }
-      }
-
       // Show iOS install prompt after 3 seconds
       setTimeout(() => {
         setShowInstallPrompt(true);
@@ -115,7 +115,7 @@ export default function PWAInstaller() {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false);
-    // Show again in 7 days
+    // Show again in 24 hours
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
