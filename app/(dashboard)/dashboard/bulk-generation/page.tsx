@@ -249,6 +249,29 @@ export default function BulkGenerationPage() {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               placeholder="e.g., fal-ai/flux-pro/v1.1"
             />
+            <div className="flex flex-wrap gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => setImageGenModel('fal-ai/flux-pro/v1.1')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                flux-pro/v1.1
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageGenModel('fal-ai/flux/dev')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                flux/dev
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageGenModel('fal-ai/flux/schnell')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                flux/schnell
+              </button>
+            </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
 
@@ -264,6 +287,29 @@ export default function BulkGenerationPage() {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               placeholder="e.g., gpt-4o"
             />
+            <div className="flex flex-wrap gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => setKeywordSearchModel('gpt-4o-mini')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                gpt-4o-mini
+              </button>
+              <button
+                type="button"
+                onClick={() => setKeywordSearchModel('gpt-4o')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                gpt-4o
+              </button>
+              <button
+                type="button"
+                onClick={() => setKeywordSearchModel('deepseek-chat')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                deepseek-chat
+              </button>
+            </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
 
@@ -279,6 +325,22 @@ export default function BulkGenerationPage() {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               placeholder="e.g., gpt-4o"
             />
+            <div className="flex flex-wrap gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => setImageDescModel('gpt-4o-mini')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                gpt-4o-mini
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageDescModel('gpt-4o')}
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                gpt-4o
+              </button>
+            </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
         </div>
