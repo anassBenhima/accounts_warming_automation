@@ -30,6 +30,11 @@ interface Row {
   createdAt: string;
 }
 
+interface ApiKey {
+  name: string;
+  type: string;
+}
+
 interface BulkGeneration {
   id: string;
   name: string;
@@ -39,6 +44,12 @@ interface BulkGeneration {
   failedRows: number;
   imageWidth: number;
   imageHeight: number;
+  imageGenModel?: string | null;
+  keywordSearchModel?: string | null;
+  imageDescModel?: string | null;
+  imageGenApiKey?: ApiKey;
+  keywordSearchApiKey?: ApiKey;
+  imageDescApiKey?: ApiKey;
   createdAt: string;
   updatedAt: string;
   rows: Row[];
@@ -269,6 +280,55 @@ export default function BulkHistoryDetailPage() {
           <p className="text-lg md:text-xl font-bold text-purple-700">
             {bulkGeneration.imageWidth} × {bulkGeneration.imageHeight}
           </p>
+        </div>
+      </div>
+
+      {/* Models and APIs */}
+      <div className="bg-white border rounded-lg p-4 md:p-6 mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Models & APIs Used</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-600">Image Generation</h3>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-900 font-medium">
+                {bulkGeneration.imageGenApiKey?.name || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                API: {bulkGeneration.imageGenApiKey?.type || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Model: {bulkGeneration.imageGenModel || 'Default'}
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-600">Keyword Search</h3>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-900 font-medium">
+                {bulkGeneration.keywordSearchApiKey?.name || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                API: {bulkGeneration.keywordSearchApiKey?.type || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Model: {bulkGeneration.keywordSearchModel || 'Default'}
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-600">Image Description</h3>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-900 font-medium">
+                {bulkGeneration.imageDescApiKey?.name || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                API: {bulkGeneration.imageDescApiKey?.type || 'N/A'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Model: {bulkGeneration.imageDescModel || 'Default'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

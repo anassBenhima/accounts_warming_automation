@@ -26,6 +26,15 @@ export async function GET(
           },
           orderBy: { createdAt: 'asc' },
         },
+        imageGenApiKey: {
+          select: { name: true, type: true },
+        },
+        keywordSearchApiKey: {
+          select: { name: true, type: true },
+        },
+        imageDescApiKey: {
+          select: { name: true, type: true },
+        },
       },
     });
 
