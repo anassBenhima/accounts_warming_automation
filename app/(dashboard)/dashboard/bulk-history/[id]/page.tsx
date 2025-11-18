@@ -145,16 +145,25 @@ export default function BulkHistoryDetailPage() {
     if (!bulkGeneration) return;
 
     const csvData = [
-      ['Title', 'Description', 'Keywords', 'Image URL'],
+      ['Title', 'Description', 'Keywords', 'Image URL', 'Alt Text'],
     ];
+
+    // Escape CSV values (handle commas and quotes)
+    const escapeCSV = (value: string) => {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
 
     bulkGeneration.rows.forEach((row) => {
       row.generatedPins.forEach((pin) => {
         csvData.push([
-          pin.title,
-          pin.description,
-          pin.keywords.join(', '),
-          pin.imageUrl,
+          escapeCSV(pin.title),
+          escapeCSV(pin.description),
+          escapeCSV(pin.keywords.join(', ')),
+          escapeCSV(pin.imageUrl),
+          escapeCSV((pin as any).altText || pin.title), // Use altText or fallback to title
         ]);
       });
     });

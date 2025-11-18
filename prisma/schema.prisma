@@ -225,6 +225,7 @@ model GeneratedImage {
   title        String
   description  String     @db.Text
   keywords     String[]   // Array of keywords
+  altText      String?    @db.Text  // Accessibility alt text for the image
 
   // Status
   status       String     @default("completed") // completed, failed
@@ -406,6 +407,7 @@ model BulkGeneratedPin {
   title       String
   description String   @db.Text
   keywords    String[] // Array of keywords
+  altText     String?  @db.Text // Accessibility alt text for the image
 
   // Status
   status String @default("completed") // completed, failed

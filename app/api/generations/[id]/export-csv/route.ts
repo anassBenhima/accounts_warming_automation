@@ -30,9 +30,9 @@ export async function GET(
     // Get the base URL from the request
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3333';
 
-    // Create CSV header (Pinterest bulk upload format)
+    // Create CSV header (Pinterest bulk upload format with Alt Text)
     const csvRows = [
-      ['Title', 'Description', 'Media URL', 'Pinterest board', 'Thumbnail'].join(','),
+      ['Title', 'Description', 'Media URL', 'Alt Text', 'Pinterest board', 'Thumbnail'].join(','),
     ];
 
     // Add data rows
@@ -53,6 +53,7 @@ export async function GET(
           escapeCSV(image.title || ''),
           escapeCSV(image.description || ''),
           escapeCSV(mediaUrl),
+          escapeCSV(image.altText || image.title || ''), // Use altText or fallback to title
           '', // Pinterest board - empty for user to fill later
           '', // Thumbnail - blank for image pins
         ].join(',');

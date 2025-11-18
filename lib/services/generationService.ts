@@ -131,6 +131,15 @@ export async function processGeneration(generationId: string) {
         const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
         const finalPath = await applyTemplate(originalPath, randomTemplate, pinData.Title);
 
+        // Generate alt text for accessibility
+        const altText = await generateAltText(
+          finalPath,
+          pinData.Title,
+          imageDescApiKey.apiKey,
+          imageDescApiKey.type,
+          userId
+        );
+
         // Add metadata to image
         await addMetadataToImage(finalPath, {
           title: pinData.Title,
@@ -148,6 +157,7 @@ export async function processGeneration(generationId: string) {
             title: pinData.Title,
             description: pinData.description,
             keywords: pinData.Keywords,
+            altText,
             status: 'completed',
           },
         });
@@ -324,6 +334,133 @@ async function describeImage(
 
     // Return fallback description
     return 'A delicious food image with vibrant colors and appetizing presentation.';
+  }
+}
+
+async function generateAltText(
+  imagePath: string,
+  title: string,
+  apiKey: string,
+  apiType: string,
+  userId?: string
+): Promise<string> {
+  const logger = userId ? createUserLogger(userId) : null;
+  const startTime = Date.now();
+
+  try {
+    // Read image file and convert to base64
+    const fullImagePath = path.join(process.cwd(), 'public', imagePath);
+    const imageBuffer = await readFile(fullImagePath);
+    const base64Image = imageBuffer.toString('base64');
+    const mimeType = imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+    // Only OpenAI supports vision API
+    if (apiType !== 'openai') {
+      const fallbackAlt = title.substring(0, 125); // Max 125 chars for accessibility
+
+      if (logger) {
+        await logger.warning({
+          module: 'IMAGE_PROCESSING',
+          action: 'generate_alt_text',
+          message: `Alt text generation not supported for ${apiType}, using title fallback`,
+          input: { apiType, imagePath },
+          output: { altText: fallbackAlt },
+          duration: Date.now() - startTime,
+        });
+      }
+
+      return fallbackAlt;
+    }
+
+    // Use OpenAI's cheapest vision model: gpt-4o-mini
+    const prompt = `Generate a concise, descriptive alt text for this image for accessibility purposes.
+The alt text should:
+- Be maximum 125 characters
+- Describe the key visual elements
+- Be suitable for screen readers
+- Focus on what's visible in the image
+
+Image title: ${title}
+
+Return ONLY the alt text, nothing else.`;
+
+    const requestData = {
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType};base64,${base64Image}`,
+                detail: 'low', // Use low detail to minimize token usage
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 100, // Alt text should be short
+    };
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      requestData,
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    let altText = response.data.choices[0].message.content.trim();
+
+    // Ensure it's not too long
+    if (altText.length > 125) {
+      altText = altText.substring(0, 122) + '...';
+    }
+
+    const duration = Date.now() - startTime;
+
+    if (logger) {
+      await logger.success({
+        module: 'API_CALL',
+        action: 'openai_alt_text',
+        message: 'Successfully generated alt text using OpenAI gpt-4o-mini',
+        input: {
+          model: 'gpt-4o-mini',
+          title,
+          imageSize: `${(imageBuffer.length / 1024).toFixed(2)} KB`,
+        },
+        output: {
+          altText,
+          tokens: response.data.usage,
+        },
+        duration,
+      });
+    }
+
+    return altText;
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    console.error('Error generating alt text:', error);
+
+    if (logger) {
+      await logger.error({
+        module: 'API_CALL',
+        action: 'openai_alt_text',
+        message: 'Failed to generate alt text',
+        input: { imagePath, apiType },
+        error: error.message,
+        stackTrace: error.stack,
+        duration,
+      });
+    }
+
+    // Return title as fallback
+    return title.substring(0, 125);
   }
 }
 

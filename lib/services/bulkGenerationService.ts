@@ -184,6 +184,14 @@ async function processRow(
         bulkGeneration.imageHeight
       );
 
+      // Generate alt text for accessibility
+      const altText = await generateAltText(
+        imageUrl,
+        pinData.title,
+        imageDescApiKey.apiKey,
+        imageDescModel
+      );
+
       // Save generated pin
       await prisma.bulkGeneratedPin.create({
         data: {
@@ -192,6 +200,7 @@ async function processRow(
           title: pinData.title,
           description: pinData.description,
           keywords: pinData.keywords,
+          altText,
           status: 'completed',
         },
       });
@@ -384,5 +393,73 @@ async function generateImage(
   } catch (error) {
     console.error('Error generating image:', error);
     throw new Error('Failed to generate image');
+  }
+}
+
+/**
+ * Generate alt text for an image using vision API
+ */
+async function generateAltText(
+  imageUrl: string,
+  title: string,
+  apiKey: string,
+  model: string
+): Promise<string> {
+  try {
+    const prompt = `Generate a concise, descriptive alt text for this image for accessibility purposes.
+The alt text should:
+- Be maximum 125 characters
+- Describe the key visual elements
+- Be suitable for screen readers
+- Focus on what's visible in the image
+
+Image title: ${title}
+
+Return ONLY the alt text, nothing else.`;
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: prompt,
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl,
+                  detail: 'low', // Use low detail to minimize token usage
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 100,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
+
+    let altText = response.data.choices[0].message.content.trim();
+
+    // Ensure it's not too long
+    if (altText.length > 125) {
+      altText = altText.substring(0, 122) + '...';
+    }
+
+    return altText;
+  } catch (error) {
+    console.error('Error generating alt text:', error);
+    // Return title as fallback
+    return title.substring(0, 125);
   }
 }
