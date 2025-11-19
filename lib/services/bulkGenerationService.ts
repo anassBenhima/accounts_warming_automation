@@ -243,6 +243,12 @@ async function describeImage(
   model: string
 ): Promise<string> {
   try {
+    // Only OpenAI supports vision API, DeepSeek doesn't
+    if (!model.includes('gpt-4')) {
+      console.log('Vision API not supported for this model, using fallback description');
+      return 'A delicious food image with vibrant colors and appetizing presentation.';
+    }
+
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -277,7 +283,8 @@ async function describeImage(
     return response.data.choices[0].message.content;
   } catch (error) {
     console.error('Error describing image:', error);
-    throw new Error('Failed to describe image');
+    // Return fallback description on error
+    return 'A delicious food image with vibrant colors and appetizing presentation.';
   }
 }
 
@@ -310,8 +317,13 @@ Return ONLY a valid JSON array with this exact format:
   }
 ]`;
 
+    // Determine API endpoint based on model
+    const endpoint = model.includes('deepseek')
+      ? 'https://api.deepseek.com/v1/chat/completions'
+      : 'https://api.openai.com/v1/chat/completions';
+
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+      endpoint,
       {
         model,
         messages: [
