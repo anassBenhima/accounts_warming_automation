@@ -22,8 +22,8 @@ docker compose -f docker-compose.prod.yml build --no-cache
 echo "🛑 Stopping existing containers..."
 docker compose -f docker-compose.prod.yml down
 
-echo "🗄️ Running database migrations..."
-docker compose -f docker-compose.prod.yml run --rm app npx prisma migrate deploy
+echo "🗄️ Syncing database schema..."
+docker compose -f docker-compose.prod.yml run --rm app npx prisma db push --accept-data-loss
 
 echo "🌱 Seeding database with initial data..."
 docker compose -f docker-compose.prod.yml run --rm app npx prisma db seed || echo "⚠️ Seed already exists or failed (this is normal if database is already seeded)"
