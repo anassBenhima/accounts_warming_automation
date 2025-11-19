@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
       !imageToPromptId ||
       !imageGenerationPromptId ||
       !keywordSearchPromptId ||
-      !templateIds ||
-      templateIds.length === 0
+      templateIds === undefined ||
+      templateIds === null
     ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -122,11 +122,13 @@ export async function POST(request: NextRequest) {
             imageGenerationPromptId,
             keywordSearchPromptId,
             status: 'PENDING',
-            generationTemplates: {
-              create: templateIds.map((templateId: string) => ({
-                templateId,
-              })),
-            },
+            ...(templateIds.length > 0 && {
+              generationTemplates: {
+                create: templateIds.map((templateId: string) => ({
+                  templateId,
+                })),
+              },
+            }),
           },
           include: {
             generationTemplates: {

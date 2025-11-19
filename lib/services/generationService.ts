@@ -127,9 +127,19 @@ export async function processGeneration(generationId: string) {
         // Download generated image
         const originalPath = await downloadImage(generatedImageUrl, pinData.Title);
 
-        // Apply random template
-        const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-        const finalPath = await applyTemplate(originalPath, randomTemplate, pinData.Title);
+        // Apply template or clean image
+        let finalPath: string;
+        let templateId: string | null = null;
+
+        if (templates.length > 0) {
+          // Apply random template
+          const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+          finalPath = await applyTemplate(originalPath, randomTemplate, pinData.Title);
+          templateId = randomTemplate.id;
+        } else {
+          // No template: just clean and optimize the image
+          finalPath = await cleanAndOptimizeImage(originalPath, pinData.Title);
+        }
 
         // Generate alt text for accessibility
         const altText = await generateAltText(
@@ -151,7 +161,7 @@ export async function processGeneration(generationId: string) {
         await prisma.generatedImage.create({
           data: {
             generationId,
-            templateId: randomTemplate.id,
+            templateId,
             originalPath,
             finalPath,
             title: pinData.Title,
@@ -849,6 +859,98 @@ async function applyTemplate(imagePath: string, template: any, title: string): P
     return `/generated/${outputFilename}`;
   } catch (error) {
     console.error('Error applying template:', error);
+    return imagePath; // Return original on error
+  }
+}
+
+/**
+ * Clean and optimize image without applying template
+ * Applies humanizing effects and strips metadata
+ */
+async function cleanAndOptimizeImage(imagePath: string, title: string): Promise<string> {
+  try {
+    const fullImagePath = path.join(process.cwd(), 'public', imagePath);
+    const baseImage = sharp(fullImagePath);
+    const metadata = await baseImage.metadata();
+
+    // Step 1: Save base image as temp file
+    const tempFilename = `temp_${randomUUID()}.png`;
+    const tempPath = path.join(process.cwd(), 'public', 'generated', tempFilename);
+    await baseImage.toFile(tempPath);
+
+    // Step 2: Apply humanizing effects to make image appear more natural
+    const processedFilename = `processed_${randomUUID()}.png`;
+    const processedPath = path.join(process.cwd(), 'public', 'generated', processedFilename);
+
+    // Create a semi-transparent white overlay layer (0.5% opacity for subtle effect)
+    const overlayLayer = await sharp({
+      create: {
+        width: metadata.width!,
+        height: metadata.height!,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 0.005 }, // 0.5% opacity
+      },
+    })
+      .png()
+      .toBuffer();
+
+    // Create Gaussian noise layer (15% intensity)
+    const noiseBuffer = Buffer.alloc(metadata.width! * metadata.height! * 4);
+    for (let i = 0; i < noiseBuffer.length; i += 4) {
+      const noise = Math.floor((Math.random() - 0.5) * 255 * 0.15);
+      noiseBuffer[i] = 128 + noise;     // R
+      noiseBuffer[i + 1] = 128 + noise; // G
+      noiseBuffer[i + 2] = 128 + noise; // B
+      noiseBuffer[i + 3] = 25;          // Alpha (~10% for subtle blend)
+    }
+
+    const noiseLayer = await sharp(noiseBuffer, {
+      raw: {
+        width: metadata.width!,
+        height: metadata.height!,
+        channels: 4,
+      },
+    })
+      .png()
+      .toBuffer();
+
+    // Apply all effects: overlay layer, noise, and contrast adjustment
+    await sharp(tempPath)
+      .composite([
+        { input: overlayLayer, blend: 'over' },
+        { input: noiseLayer, blend: 'overlay' },
+      ])
+      .modulate({
+        brightness: 1.01, // 1% brightness increase for subtle contrast boost
+      })
+      .toFile(processedPath);
+
+    // Step 3: Re-export the image to strip all metadata and create a fresh file
+    const sanitizedTitle = sanitizeFilename(title);
+    const outputFilename = `${sanitizedTitle}_final_${randomUUID().substring(0, 8)}.png`;
+    const outputPath = path.join(process.cwd(), 'public', 'generated', outputFilename);
+
+    await sharp(processedPath)
+      .withMetadata({}) // Strip all existing metadata
+      .png({
+        quality: 100,
+        compressionLevel: 6,
+        adaptiveFiltering: true,
+      })
+      .toFile(outputPath);
+
+    // Step 4: Delete the temporary files
+    try {
+      const { unlink } = await import('fs/promises');
+      await unlink(tempPath);
+      await unlink(processedPath);
+    } catch (err) {
+      console.error('Error deleting temp files:', err);
+    }
+
+    return `/generated/${outputFilename}`;
+  } catch (error) {
+    console.error('Error cleaning and optimizing image:', error);
     return imagePath; // Return original on error
   }
 }

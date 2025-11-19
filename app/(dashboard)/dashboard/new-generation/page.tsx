@@ -59,6 +59,7 @@ export default function NewGenerationPage() {
   const [keywordPrompts, setKeywordPrompts] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [noTemplate, setNoTemplate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -124,8 +125,8 @@ export default function NewGenerationPage() {
   };
 
   const handleSubmit = async () => {
-    if (selectedTemplates.length === 0) {
-      toast.error('Please select at least one template');
+    if (!noTemplate && selectedTemplates.length === 0) {
+      toast.error('Please select at least one template or choose "No Template"');
       return;
     }
 
@@ -137,7 +138,7 @@ export default function NewGenerationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          templateIds: selectedTemplates,
+          templateIds: noTemplate ? [] : selectedTemplates,
         }),
       });
 
@@ -761,14 +762,42 @@ export default function NewGenerationPage() {
               Step 9: Select Templates
             </h2>
             <p className="text-gray-600 mb-4">
-              Select at least one template to apply to the generated images
+              Select at least one template to apply to the generated images, or choose no template for clean images only
             </p>
 
-            {activeTemplates.length === 0 ? (
+            {/* No Template Option */}
+            <div className="mb-4">
+              <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                style={{
+                  borderColor: noTemplate ? '#2563eb' : '#e5e7eb',
+                  backgroundColor: noTemplate ? '#eff6ff' : 'white'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={noTemplate}
+                  onChange={(e) => {
+                    setNoTemplate(e.target.checked);
+                    if (e.target.checked) {
+                      setSelectedTemplates([]);
+                    }
+                  }}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <div>
+                  <h3 className="font-semibold text-gray-900">No Template</h3>
+                  <p className="text-sm text-gray-600">
+                    Skip template application and only apply image optimization (cleaning, resizing)
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {!noTemplate && activeTemplates.length === 0 ? (
               <div className="text-center py-8 text-sm md:text-base text-gray-500">
-                No active templates found. Please create templates first.
+                No active templates found. Please create templates first or select "No Template".
               </div>
-            ) : (
+            ) : !noTemplate ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-h-96 overflow-y-auto">
                 {activeTemplates.map((template) => (
                   <div
@@ -795,7 +824,7 @@ export default function NewGenerationPage() {
                   </div>
                 ))}
               </div>
-            )}
+            ) : null}
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
@@ -806,7 +835,7 @@ export default function NewGenerationPage() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading || selectedTemplates.length === 0}
+                disabled={loading || (!noTemplate && selectedTemplates.length === 0)}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
               >
                 <Play className="w-4 h-4 md:w-5 md:h-5" />
