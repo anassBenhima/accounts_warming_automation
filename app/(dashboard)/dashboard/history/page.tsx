@@ -51,6 +51,21 @@ interface Generation {
   imageDescription: string | null;
   uploadedImagePath?: string;
   apiResponses?: any;
+  // Fields for regeneration
+  imageGenApiKeyId?: string;
+  keywordSearchApiKeyId?: string;
+  imageDescApiKeyId?: string;
+  imageGenModel?: string;
+  imageDescModel?: string;
+  additionalKeywords?: string | null;
+  imageToPromptId?: string;
+  imageGenerationPromptId?: string;
+  keywordSearchPromptId?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  generationTemplates?: Array<{
+    template: Template;
+  }>;
   generatedImages: GeneratedImage[];
 }
 
@@ -256,6 +271,60 @@ export default function HistoryPage() {
 
   const handleExportCsv = (generationId: string) => {
     window.open(`/api/generations/${generationId}/export-csv`, "_blank");
+  };
+
+  const handleRegenerate = async (generation: Generation) => {
+    if (!generation.imageGenApiKeyId || !generation.uploadedImagePath) {
+      toast.error("Cannot regenerate: missing required data");
+      return;
+    }
+
+    try {
+      // Get template IDs from the generation
+      const templateIds = generation.generationTemplates?.map((gt) => gt.template.id) || [];
+
+      // Create a new generation with the same settings but quantity = 1
+      const response = await fetch("/api/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageGenApiKeyId: generation.imageGenApiKeyId,
+          imageGenModel: generation.imageGenModel,
+          keywordSearchApiKeyId: generation.keywordSearchApiKeyId,
+          imageDescApiKeyId: generation.imageDescApiKeyId,
+          imageDescModel: generation.imageDescModel,
+          quantity: 1, // Regenerate only 1 image
+          uploadedImagePath: generation.uploadedImagePath,
+          additionalKeywords: generation.additionalKeywords || "",
+          imageToPromptId: generation.imageToPromptId,
+          imageGenerationPromptId: generation.imageGenerationPromptId,
+          keywordSearchPromptId: generation.keywordSearchPromptId,
+          templateIds,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to regenerate");
+      }
+
+      const newGeneration = await response.json();
+
+      toast.success("Regeneration started! Redirecting...");
+
+      // Close the modal and refresh the list
+      setSelectedGeneration(null);
+      await fetchGenerations(false);
+
+      // Redirect to the new generation after a short delay
+      setTimeout(() => {
+        window.location.href = `/dashboard/history?show=${newGeneration.id}`;
+      }, 1000);
+    } catch (error) {
+      console.error("Error regenerating:", error);
+      toast.error("Failed to regenerate. Please try again.");
+    }
   };
 
   if (loading) {
@@ -577,6 +646,9 @@ export default function HistoryPage() {
                   title="API Response Details"
                   apiResponses={selectedGeneration.apiResponses}
                   uploadedImageUrl={selectedGeneration.uploadedImagePath}
+                  onRegenerate={async () => {
+                    await handleRegenerate(selectedGeneration);
+                  }}
                 />
               </div>
             )}

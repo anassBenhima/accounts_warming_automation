@@ -32,6 +32,18 @@ export async function GET() {
             imageDescription: true,
             apiResponses: true, // Include API responses for debugging
             uploadedImagePath: true, // Include uploaded image path
+            // Fields needed for regeneration
+            imageGenApiKeyId: true,
+            keywordSearchApiKeyId: true,
+            imageDescApiKeyId: true,
+            imageGenModel: true,
+            imageDescModel: true,
+            additionalKeywords: true,
+            imageToPromptId: true,
+            imageGenerationPromptId: true,
+            keywordSearchPromptId: true,
+            imageWidth: true,
+            imageHeight: true,
             generatedImages: true,
             generationTemplates: {
               include: {

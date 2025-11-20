@@ -52,6 +52,9 @@ interface BulkGeneration {
   imageGenModel?: string | null;
   keywordSearchModel?: string | null;
   imageDescModel?: string | null;
+  imageGenApiKeyId?: string;
+  keywordSearchApiKeyId?: string;
+  imageDescApiKeyId?: string;
   imageGenApiKey?: ApiKey;
   keywordSearchApiKey?: ApiKey;
   imageDescApiKey?: ApiKey;
@@ -182,6 +185,60 @@ export default function BulkHistoryDetailPage() {
     a.click();
     window.URL.revokeObjectURL(url);
     toast.success('CSV exported successfully');
+  };
+
+  const handleRegenerateRow = async (row: Row) => {
+    if (!bulkGeneration || !bulkGeneration.imageGenApiKeyId || !bulkGeneration.keywordSearchApiKeyId || !bulkGeneration.imageDescApiKeyId) {
+      toast.error('Cannot regenerate: missing required data');
+      return;
+    }
+
+    try {
+      // Create a new bulk generation with 1 row based on this row
+      const response = await fetch('/api/bulk-generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `Regenerated: ${bulkGeneration.name}`,
+          imageGenApiKeyId: bulkGeneration.imageGenApiKeyId,
+          keywordSearchApiKeyId: bulkGeneration.keywordSearchApiKeyId,
+          imageDescApiKeyId: bulkGeneration.imageDescApiKeyId,
+          imageGenModel: bulkGeneration.imageGenModel,
+          keywordSearchModel: bulkGeneration.keywordSearchModel,
+          imageDescModel: bulkGeneration.imageDescModel,
+          imageWidth: bulkGeneration.imageWidth,
+          imageHeight: bulkGeneration.imageHeight,
+          rows: [
+            {
+              keywords: row.keywords,
+              imageUrl: row.imageUrl,
+              title: row.title || null,
+              description: row.description || null,
+              altText: row.altText || null,
+              quantity: 1, // Regenerate only 1 image
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate');
+      }
+
+      const newBulkGeneration = await response.json();
+
+      toast.success('Regeneration started! Redirecting...');
+
+      // Redirect to the new bulk generation after a short delay
+      setTimeout(() => {
+        router.push(`/dashboard/bulk-history/${newBulkGeneration.id}`);
+      }, 1000);
+    } catch (error) {
+      console.error('Error regenerating:', error);
+      toast.error('Failed to regenerate. Please try again.');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -472,6 +529,9 @@ export default function BulkHistoryDetailPage() {
                     description: row.description || undefined,
                     altText: row.altText || undefined,
                     keywords: row.keywords,
+                  }}
+                  onRegenerate={async () => {
+                    await handleRegenerateRow(row);
                   }}
                 />
               </div>

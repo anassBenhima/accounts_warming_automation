@@ -19,13 +19,22 @@ export async function GET(
 
     const bulkGeneration = await prisma.bulkGeneration.findUnique({
       where: { id },
-      include: {
-        rows: {
-          include: {
-            generatedPins: true,
-          },
-          orderBy: { createdAt: 'asc' },
-        },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        totalRows: true,
+        completedRows: true,
+        failedRows: true,
+        imageWidth: true,
+        imageHeight: true,
+        imageGenModel: true,
+        keywordSearchModel: true,
+        imageDescModel: true,
+        // Include API key IDs for regeneration
+        imageGenApiKeyId: true,
+        keywordSearchApiKeyId: true,
+        imageDescApiKeyId: true,
         imageGenApiKey: {
           select: { name: true, type: true },
         },
@@ -34,6 +43,15 @@ export async function GET(
         },
         imageDescApiKey: {
           select: { name: true, type: true },
+        },
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        rows: {
+          include: {
+            generatedPins: true,
+          },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });

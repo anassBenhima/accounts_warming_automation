@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Code, Image as ImageIcon, FileText, Tag } from 'lucide-react';
+import { ChevronDown, ChevronUp, Code, Image as ImageIcon, FileText, Tag, RefreshCw } from 'lucide-react';
 
 interface ApiResponseCardProps {
   title: string;
@@ -13,10 +13,25 @@ interface ApiResponseCardProps {
     altText?: string;
     keywords?: string;
   };
+  onRegenerate?: () => Promise<void>;
 }
 
-export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl, userInputs }: ApiResponseCardProps) {
+export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl, userInputs, onRegenerate }: ApiResponseCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const handleRegenerate = async () => {
+    if (!onRegenerate) return;
+
+    setIsRegenerating(true);
+    try {
+      await onRegenerate();
+    } catch (error) {
+      console.error('Regeneration error:', error);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
   if (!apiResponses) {
     return null;
@@ -112,20 +127,38 @@ export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl,
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden mt-4">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 flex items-center justify-between transition-all"
-      >
-        <div className="flex items-center gap-2">
+      <div className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 flex items-center justify-between">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 flex-1 text-left"
+        >
           <Code className="w-5 h-5 text-blue-600" />
           <span className="font-semibold text-gray-900">{title}</span>
+        </button>
+        <div className="flex items-center gap-2">
+          {onRegenerate && (
+            <button
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
+              title="Regenerate with same settings"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+              {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+            </button>
+          )}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1"
+          >
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-gray-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-gray-600" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-gray-600" />
-        )}
-      </button>
+      </div>
 
       {isExpanded && (
         <div className="p-4 bg-white space-y-4">
