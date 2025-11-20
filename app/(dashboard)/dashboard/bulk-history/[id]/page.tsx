@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { ArrowLeft, Loader2, Download, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
+import ApiResponseCard from '@/components/ApiResponseCard';
 
 interface GeneratedPin {
   id: string;
@@ -21,11 +22,15 @@ interface Row {
   id: string;
   keywords: string;
   imageUrl: string;
+  title?: string | null;
+  description?: string | null;
+  altText?: string | null;
   quantity: number;
   status: string;
   completedPins: number;
   failedPins: number;
   error?: string;
+  apiResponses?: any;
   generatedPins: GeneratedPin[];
   createdAt: string;
 }
@@ -452,6 +457,23 @@ export default function BulkHistoryDetailPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* API Response Details */}
+            {row.apiResponses && (
+              <div className="mt-4">
+                <ApiResponseCard
+                  title={`Row ${index + 1} - API Response Details`}
+                  apiResponses={row.apiResponses}
+                  uploadedImageUrl={row.imageUrl}
+                  userInputs={{
+                    title: row.title || undefined,
+                    description: row.description || undefined,
+                    altText: row.altText || undefined,
+                    keywords: row.keywords,
+                  }}
+                />
               </div>
             )}
           </div>

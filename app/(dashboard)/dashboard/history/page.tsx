@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import ApiResponseCard from "@/components/ApiResponseCard";
 
 interface GeneratedImage {
   id: string;
@@ -48,6 +49,8 @@ interface Generation {
   status: string;
   createdAt: string;
   imageDescription: string | null;
+  uploadedImagePath?: string;
+  apiResponses?: any;
   generatedImages: GeneratedImage[];
 }
 
@@ -566,6 +569,17 @@ export default function HistoryPage() {
                 </div>
               ))}
             </div>
+
+            {/* API Response Details */}
+            {selectedGeneration.apiResponses && (
+              <div className="mt-6">
+                <ApiResponseCard
+                  title="API Response Details"
+                  apiResponses={selectedGeneration.apiResponses}
+                  uploadedImageUrl={selectedGeneration.uploadedImagePath}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

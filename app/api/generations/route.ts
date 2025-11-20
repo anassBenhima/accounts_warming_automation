@@ -24,7 +24,14 @@ export async function GET() {
         return await prisma.generation.findMany({
           where: { userId: session.user.id }, // Filter by user
           orderBy: { createdAt: 'desc' },
-          include: {
+          select: {
+            id: true,
+            quantity: true,
+            status: true,
+            createdAt: true,
+            imageDescription: true,
+            apiResponses: true, // Include API responses for debugging
+            uploadedImagePath: true, // Include uploaded image path
             generatedImages: true,
             generationTemplates: {
               include: {
