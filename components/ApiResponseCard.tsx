@@ -13,25 +13,11 @@ interface ApiResponseCardProps {
     altText?: string;
     keywords?: string;
   };
-  onRegenerate?: () => Promise<void>;
+  onRegenerateClick?: () => void;
 }
 
-export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl, userInputs, onRegenerate }: ApiResponseCardProps) {
+export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl, userInputs, onRegenerateClick }: ApiResponseCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-
-  const handleRegenerate = async () => {
-    if (!onRegenerate) return;
-
-    setIsRegenerating(true);
-    try {
-      await onRegenerate();
-    } catch (error) {
-      console.error('Regeneration error:', error);
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
 
   if (!apiResponses) {
     return null;
@@ -136,15 +122,14 @@ export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl,
           <span className="font-semibold text-gray-900">{title}</span>
         </button>
         <div className="flex items-center gap-2">
-          {onRegenerate && (
+          {onRegenerateClick && (
             <button
-              onClick={handleRegenerate}
-              disabled={isRegenerating}
-              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
-              title="Regenerate with same settings"
+              onClick={onRegenerateClick}
+              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
+              title="Configure and regenerate"
             >
-              <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-              {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+              <RefreshCw className="w-4 h-4" />
+              Regenerate
             </button>
           )}
           <button

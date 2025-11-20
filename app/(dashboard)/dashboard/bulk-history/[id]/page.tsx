@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { ArrowLeft, Loader2, Download, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
 import ApiResponseCard from '@/components/ApiResponseCard';
+import RegenerateModal from '@/components/RegenerateModal';
 
 interface GeneratedPin {
   id: string;
@@ -14,6 +15,7 @@ interface GeneratedPin {
   title: string;
   description: string;
   keywords: string[];
+  altText?: string;
   status: string;
   createdAt: string;
 }
@@ -71,6 +73,8 @@ export default function BulkHistoryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [bulkGeneration, setBulkGeneration] = useState<BulkGeneration | null>(null);
   const [selectedPin, setSelectedPin] = useState<GeneratedPin | null>(null);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [regenerateRow, setRegenerateRow] = useState<Row | null>(null);
 
   useEffect(() => {
     fetchBulkGeneration();
@@ -187,8 +191,16 @@ export default function BulkHistoryDetailPage() {
     toast.success('CSV exported successfully');
   };
 
-  const handleRegenerateRow = async (row: Row) => {
-    if (!bulkGeneration || !bulkGeneration.imageGenApiKeyId || !bulkGeneration.keywordSearchApiKeyId || !bulkGeneration.imageDescApiKeyId) {
+  const handleRegenerateWithConfig = async (config: {
+    imageGenApiKeyId: string;
+    imageGenModel: string;
+    keywordSearchApiKeyId: string;
+    keywordSearchModel: string;
+    imageDescApiKeyId: string;
+    imageDescModel: string;
+    quantity: number;
+  }) => {
+    if (!bulkGeneration || !regenerateRow) {
       toast.error('Cannot regenerate: missing required data');
       return;
     }
@@ -202,22 +214,22 @@ export default function BulkHistoryDetailPage() {
         },
         body: JSON.stringify({
           name: `Regenerated: ${bulkGeneration.name}`,
-          imageGenApiKeyId: bulkGeneration.imageGenApiKeyId,
-          keywordSearchApiKeyId: bulkGeneration.keywordSearchApiKeyId,
-          imageDescApiKeyId: bulkGeneration.imageDescApiKeyId,
-          imageGenModel: bulkGeneration.imageGenModel,
-          keywordSearchModel: bulkGeneration.keywordSearchModel,
-          imageDescModel: bulkGeneration.imageDescModel,
+          imageGenApiKeyId: config.imageGenApiKeyId,
+          keywordSearchApiKeyId: config.keywordSearchApiKeyId,
+          imageDescApiKeyId: config.imageDescApiKeyId,
+          imageGenModel: config.imageGenModel,
+          keywordSearchModel: config.keywordSearchModel,
+          imageDescModel: config.imageDescModel,
           imageWidth: bulkGeneration.imageWidth,
           imageHeight: bulkGeneration.imageHeight,
           rows: [
             {
-              keywords: row.keywords,
-              imageUrl: row.imageUrl,
-              title: row.title || null,
-              description: row.description || null,
-              altText: row.altText || null,
-              quantity: 1, // Regenerate only 1 image
+              keywords: regenerateRow.keywords,
+              imageUrl: regenerateRow.imageUrl,
+              title: regenerateRow.title || null,
+              description: regenerateRow.description || null,
+              altText: regenerateRow.altText || null,
+              quantity: config.quantity,
             },
           ],
         }),
@@ -238,6 +250,7 @@ export default function BulkHistoryDetailPage() {
     } catch (error) {
       console.error('Error regenerating:', error);
       toast.error('Failed to regenerate. Please try again.');
+      throw error;
     }
   };
 
@@ -530,8 +543,9 @@ export default function BulkHistoryDetailPage() {
                     altText: row.altText || undefined,
                     keywords: row.keywords,
                   }}
-                  onRegenerate={async () => {
-                    await handleRegenerateRow(row);
+                  onRegenerateClick={() => {
+                    setRegenerateRow(row);
+                    setShowRegenerateModal(true);
                   }}
                 />
               </div>
@@ -583,6 +597,13 @@ export default function BulkHistoryDetailPage() {
                     <p className="text-sm md:text-base text-gray-900">{selectedPin.description}</p>
                   </div>
 
+                  {selectedPin.altText && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-1">Alt Text</h4>
+                      <p className="text-sm md:text-base text-gray-900">{selectedPin.altText}</p>
+                    </div>
+                  )}
+
                   <div>
                     <h4 className="text-sm font-medium text-gray-600 mb-2">Keywords</h4>
                     <div className="flex flex-wrap gap-2">
@@ -620,6 +641,26 @@ export default function BulkHistoryDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Regenerate Modal */}
+      {regenerateRow && bulkGeneration && (
+        <RegenerateModal
+          isOpen={showRegenerateModal}
+          onClose={() => {
+            setShowRegenerateModal(false);
+            setRegenerateRow(null);
+          }}
+          onRegenerate={handleRegenerateWithConfig}
+          currentConfig={{
+            imageGenApiKeyId: bulkGeneration.imageGenApiKeyId,
+            imageGenModel: bulkGeneration.imageGenModel || undefined,
+            keywordSearchApiKeyId: bulkGeneration.keywordSearchApiKeyId,
+            keywordSearchModel: bulkGeneration.keywordSearchModel || undefined,
+            imageDescApiKeyId: bulkGeneration.imageDescApiKeyId,
+            imageDescModel: bulkGeneration.imageDescModel || undefined,
+          }}
+        />
       )}
     </div>
   );

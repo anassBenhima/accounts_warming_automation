@@ -69,8 +69,10 @@ class FalService {
       // Step 1: Submit the generation request
       const requestData = {
         prompt,
-        width,
-        height,
+        image_size: {
+          width,
+          height,
+        },
         num_inference_steps: numInferenceSteps,
         num_images: numImages,
         seed,

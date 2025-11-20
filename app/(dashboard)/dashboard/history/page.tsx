@@ -16,12 +16,14 @@ import {
 import Image from "next/image";
 import toast from "react-hot-toast";
 import ApiResponseCard from "@/components/ApiResponseCard";
+import RegenerateModal from "@/components/RegenerateModal";
 
 interface GeneratedImage {
   id: string;
   title: string;
   description: string;
   keywords: string[];
+  altText?: string;
   finalPath: string;
   status: string;
   templateId: string | null;
@@ -86,6 +88,8 @@ export default function HistoryPage() {
   const [showLogs, setShowLogs] = useState<string | null>(null);
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [regenerateGeneration, setRegenerateGeneration] = useState<Generation | null>(null);
 
   useEffect(() => {
     fetchGenerations();
@@ -273,34 +277,42 @@ export default function HistoryPage() {
     window.open(`/api/generations/${generationId}/export-csv`, "_blank");
   };
 
-  const handleRegenerate = async (generation: Generation) => {
-    if (!generation.imageGenApiKeyId || !generation.uploadedImagePath) {
+  const handleRegenerateWithConfig = async (config: {
+    imageGenApiKeyId: string;
+    imageGenModel: string;
+    keywordSearchApiKeyId: string;
+    keywordSearchModel: string;
+    imageDescApiKeyId: string;
+    imageDescModel: string;
+    quantity: number;
+  }) => {
+    if (!regenerateGeneration || !regenerateGeneration.uploadedImagePath) {
       toast.error("Cannot regenerate: missing required data");
       return;
     }
 
     try {
       // Get template IDs from the generation
-      const templateIds = generation.generationTemplates?.map((gt) => gt.template.id) || [];
+      const templateIds = regenerateGeneration.generationTemplates?.map((gt) => gt.template.id) || [];
 
-      // Create a new generation with the same settings but quantity = 1
+      // Create a new generation with the configured settings
       const response = await fetch("/api/generations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          imageGenApiKeyId: generation.imageGenApiKeyId,
-          imageGenModel: generation.imageGenModel,
-          keywordSearchApiKeyId: generation.keywordSearchApiKeyId,
-          imageDescApiKeyId: generation.imageDescApiKeyId,
-          imageDescModel: generation.imageDescModel,
-          quantity: 1, // Regenerate only 1 image
-          uploadedImagePath: generation.uploadedImagePath,
-          additionalKeywords: generation.additionalKeywords || "",
-          imageToPromptId: generation.imageToPromptId,
-          imageGenerationPromptId: generation.imageGenerationPromptId,
-          keywordSearchPromptId: generation.keywordSearchPromptId,
+          imageGenApiKeyId: config.imageGenApiKeyId,
+          imageGenModel: config.imageGenModel,
+          keywordSearchApiKeyId: config.keywordSearchApiKeyId,
+          imageDescApiKeyId: config.imageDescApiKeyId,
+          imageDescModel: config.imageDescModel,
+          quantity: config.quantity,
+          uploadedImagePath: regenerateGeneration.uploadedImagePath,
+          additionalKeywords: regenerateGeneration.additionalKeywords || "",
+          imageToPromptId: regenerateGeneration.imageToPromptId,
+          imageGenerationPromptId: regenerateGeneration.imageGenerationPromptId,
+          keywordSearchPromptId: regenerateGeneration.keywordSearchPromptId,
           templateIds,
         }),
       });
@@ -324,6 +336,7 @@ export default function HistoryPage() {
     } catch (error) {
       console.error("Error regenerating:", error);
       toast.error("Failed to regenerate. Please try again.");
+      throw error;
     }
   };
 
@@ -557,6 +570,12 @@ export default function HistoryPage() {
                     <p className="text-xs md:text-sm text-gray-600 mb-3">
                       {image.description}
                     </p>
+                    {image.altText && (
+                      <div className="mb-3 p-2 bg-blue-50 rounded">
+                        <p className="text-xs font-medium text-blue-900 mb-1">Alt Text:</p>
+                        <p className="text-xs text-blue-700">{image.altText}</p>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-1 mb-3">
                       {image.keywords.map((keyword, idx) => (
                         <span
@@ -646,8 +665,9 @@ export default function HistoryPage() {
                   title="API Response Details"
                   apiResponses={selectedGeneration.apiResponses}
                   uploadedImageUrl={selectedGeneration.uploadedImagePath}
-                  onRegenerate={async () => {
-                    await handleRegenerate(selectedGeneration);
+                  onRegenerateClick={() => {
+                    setRegenerateGeneration(selectedGeneration);
+                    setShowRegenerateModal(true);
                   }}
                 />
               </div>
@@ -743,6 +763,26 @@ export default function HistoryPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Regenerate Modal */}
+      {regenerateGeneration && (
+        <RegenerateModal
+          isOpen={showRegenerateModal}
+          onClose={() => {
+            setShowRegenerateModal(false);
+            setRegenerateGeneration(null);
+          }}
+          onRegenerate={handleRegenerateWithConfig}
+          currentConfig={{
+            imageGenApiKeyId: regenerateGeneration.imageGenApiKeyId,
+            imageGenModel: regenerateGeneration.imageGenModel,
+            keywordSearchApiKeyId: regenerateGeneration.keywordSearchApiKeyId,
+            keywordSearchModel: undefined, // Not stored in Generation
+            imageDescApiKeyId: regenerateGeneration.imageDescApiKeyId,
+            imageDescModel: regenerateGeneration.imageDescModel,
+          }}
+        />
       )}
     </div>
   );
