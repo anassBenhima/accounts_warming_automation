@@ -187,6 +187,9 @@ model Generation {
   // Generated description from uploaded image
   imageDescription String? @db.Text
 
+  // API responses for debugging
+  apiResponses Json? @db.Json
+
   // Status
   status      GenerationStatus @default(PENDING)
   error       String?          @db.Text
@@ -390,6 +393,9 @@ model BulkGenerationRow {
   keywords String @db.Text // Comma-separated or JSON keywords
   imageUrl String          // URL or path to input image
   quantity Int             // Number of pins to generate for this row
+
+  // API responses for debugging
+  apiResponses Json? @db.Json
 
   // Status tracking
   status        BulkGenerationRowStatus @default(PENDING)

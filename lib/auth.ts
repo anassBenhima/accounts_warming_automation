@@ -6,7 +6,7 @@ import { redis } from './redis';
 import crypto from 'crypto';
 
 // Token expiration times
-const ACCESS_TOKEN_EXPIRY = 15 * 60; // 15 minutes in seconds
+const ACCESS_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days in seconds (same as session)
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days in seconds
 
 // Extended JWT token type

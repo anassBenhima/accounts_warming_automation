@@ -498,9 +498,13 @@ async function generateKeywords(
     const requestData = {
       model,
       messages: [
+        {
+          role: 'system',
+          content: 'You are a creative Pinterest marketing expert. Generate diverse, unique variations that are distinctly different from each other. Avoid repetitive phrases and ensure each variation has its own personality and appeal.',
+        },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
+      temperature: 0.9, // Increased for more variation
     };
 
     const response = await axios.post(

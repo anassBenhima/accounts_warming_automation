@@ -23,10 +23,10 @@ echo "🛑 Stopping existing containers..."
 docker compose -f docker-compose.prod.yml down
 
 echo "🗄️ Syncing database schema..."
-docker compose -f docker-compose.prod.yml run --rm app npx -y prisma db push --accept-data-loss
+docker compose -f docker-compose.prod.yml run --rm app npx prisma@6 db push --accept-data-loss
 
 echo "🌱 Seeding database with initial data..."
-docker compose -f docker-compose.prod.yml run --rm app npx -y prisma db seed || echo "⚠️ Seed already exists or failed (this is normal if database is already seeded)"
+docker compose -f docker-compose.prod.yml run --rm app npm run prisma:seed || echo "⚠️ Seed already exists or failed (this is normal if database is already seeded)"
 
 echo "🚀 Starting containers..."
 docker compose -f docker-compose.prod.yml up -d

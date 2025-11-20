@@ -16,7 +16,8 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.0",
+    "@fal-ai/client": "^1.7.2",
+    "@prisma/client": "^6.19.0",
     "@types/archiver": "^7.0.0",
     "archiver": "^7.0.1",
     "axios": "^1.7.9",
@@ -30,7 +31,7 @@
     "next": "^15.1.0",
     "next-auth": "^4.24.11",
     "piexifjs": "^1.0.6",
-    "prisma": "^6.2.0",
+    "prisma": "^6.19.0",
     "puppeteer": "^24.30.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
