@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import PWAInstaller from '@/components/PWAInstaller';
+import VersionUpdateNotification from '@/components/VersionUpdateNotification';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -56,6 +57,7 @@ export default function RootLayout({
       <body className={inter.className}>
         {children}
         <PWAInstaller />
+        <VersionUpdateNotification />
       </body>
     </html>
   );

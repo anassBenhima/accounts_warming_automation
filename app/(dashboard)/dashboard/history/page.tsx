@@ -1,10 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { RefreshCw, Download, Eye, FileArchive, FileSpreadsheet, Edit, FileText, ChevronDown, ChevronUp } from 'lucide-react';
-import Image from 'next/image';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  RefreshCw,
+  Download,
+  Eye,
+  FileArchive,
+  FileSpreadsheet,
+  Edit,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import Image from "next/image";
+import toast from "react-hot-toast";
 
 interface GeneratedImage {
   id: string;
@@ -46,10 +56,15 @@ export default function HistoryPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null);
+  const [selectedGeneration, setSelectedGeneration] =
+    useState<Generation | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [changingTemplate, setChangingTemplate] = useState<{ [key: string]: boolean }>({});
-  const [selectedTemplates, setSelectedTemplates] = useState<{ [key: string]: string }>({});
+  const [changingTemplate, setChangingTemplate] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [selectedTemplates, setSelectedTemplates] = useState<{
+    [key: string]: string;
+  }>({});
   const [showLogs, setShowLogs] = useState<string | null>(null);
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
@@ -68,7 +83,7 @@ export default function HistoryPage() {
 
   // Handle notification redirect - show logs for specific generation
   useEffect(() => {
-    const showGenerationId = searchParams.get('show');
+    const showGenerationId = searchParams.get("show");
     if (showGenerationId && generations.length > 0 && !showLogs) {
       // Find the generation
       const generation = generations.find((g) => g.id === showGenerationId);
@@ -77,9 +92,11 @@ export default function HistoryPage() {
         fetchLogsForGeneration(showGenerationId);
         // Scroll to the generation
         setTimeout(() => {
-          const element = document.getElementById(`generation-${showGenerationId}`);
+          const element = document.getElementById(
+            `generation-${showGenerationId}`
+          );
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }, 500);
       }
@@ -89,11 +106,11 @@ export default function HistoryPage() {
   const fetchGenerations = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
     try {
-      const response = await fetch('/api/generations');
+      const response = await fetch("/api/generations");
       const data = await response.json();
       setGenerations(data);
     } catch (error) {
-      console.error('Error fetching generations:', error);
+      console.error("Error fetching generations:", error);
     } finally {
       setLoading(false);
       if (showSpinner) setRefreshing(false);
@@ -107,34 +124,37 @@ export default function HistoryPage() {
       setLogs(data);
       setShowLogs(generationId);
     } catch (error) {
-      console.error('Error fetching logs:', error);
-      toast.error('Failed to fetch logs');
+      console.error("Error fetching logs:", error);
+      toast.error("Failed to fetch logs");
     }
   };
 
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/api/templates');
+      const response = await fetch("/api/templates");
       const data = await response.json();
       setTemplates(data);
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      console.error("Error fetching templates:", error);
     }
   };
 
   const handleChangeTemplate = async (imageId: string, templateId: string) => {
     setChangingTemplate({ ...changingTemplate, [imageId]: true });
     try {
-      const response = await fetch(`/api/generated-images/${imageId}/change-template`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ templateId }),
-      });
+      const response = await fetch(
+        `/api/generated-images/${imageId}/change-template`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ templateId }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to change template');
+        throw new Error("Failed to change template");
       }
 
       const result = await response.json();
@@ -143,23 +163,32 @@ export default function HistoryPage() {
       if (selectedGeneration) {
         const updatedImages = selectedGeneration.generatedImages.map((img) =>
           img.id === imageId
-            ? { ...img, templateId: result.image.templateId, finalPath: result.image.finalPath }
+            ? {
+                ...img,
+                templateId: result.image.templateId,
+                finalPath: result.image.finalPath,
+              }
             : img
         );
-        setSelectedGeneration({ ...selectedGeneration, generatedImages: updatedImages });
+        setSelectedGeneration({
+          ...selectedGeneration,
+          generatedImages: updatedImages,
+        });
 
         // Also update in the generations list
-        setGenerations(generations.map((gen) =>
-          gen.id === selectedGeneration.id
-            ? { ...gen, generatedImages: updatedImages }
-            : gen
-        ));
+        setGenerations(
+          generations.map((gen) =>
+            gen.id === selectedGeneration.id
+              ? { ...gen, generatedImages: updatedImages }
+              : gen
+          )
+        );
       }
 
-      toast.success('Template changed successfully!');
+      toast.success("Template changed successfully!");
     } catch (error) {
-      console.error('Error changing template:', error);
-      toast.error('Failed to change template. Please try again.');
+      console.error("Error changing template:", error);
+      toast.error("Failed to change template. Please try again.");
     } finally {
       setChangingTemplate({ ...changingTemplate, [imageId]: false });
     }
@@ -167,61 +196,63 @@ export default function HistoryPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'PROCESSING':
-        return 'bg-blue-100 text-blue-800';
-      case 'FAILED':
-        return 'bg-red-100 text-red-800';
+      case "COMPLETED":
+        return "bg-green-100 text-green-800";
+      case "PROCESSING":
+        return "bg-blue-100 text-blue-800";
+      case "FAILED":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getProgressPercentage = (generation: Generation) => {
-    if (generation.status === 'COMPLETED') return 100;
-    if (generation.status === 'FAILED') return 0;
-    if (generation.status === 'PENDING') return 0;
+    if (generation.status === "COMPLETED") return 100;
+    if (generation.status === "FAILED") return 0;
+    if (generation.status === "PENDING") return 0;
 
     // For PROCESSING status, calculate based on generated images
-    const completedImages = generation.generatedImages.filter(img => img.status === 'completed').length;
+    const completedImages = generation.generatedImages.filter(
+      (img) => img.status === "completed"
+    ).length;
     return Math.round((completedImages / generation.quantity) * 100);
   };
 
   const getProgressColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-500';
-      case 'PROCESSING':
-        return 'bg-blue-500';
-      case 'FAILED':
-        return 'bg-red-500';
+      case "COMPLETED":
+        return "bg-green-500";
+      case "PROCESSING":
+        return "bg-blue-500";
+      case "FAILED":
+        return "bg-red-500";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'SUCCESS':
-        return 'bg-green-100 text-green-800';
-      case 'INFO':
-        return 'bg-blue-100 text-blue-800';
-      case 'WARNING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'ERROR':
-        return 'bg-red-100 text-red-800';
+      case "SUCCESS":
+        return "bg-green-100 text-green-800";
+      case "INFO":
+        return "bg-blue-100 text-blue-800";
+      case "WARNING":
+        return "bg-yellow-100 text-yellow-800";
+      case "ERROR":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const handleDownloadZip = (generationId: string) => {
-    window.open(`/api/generations/${generationId}/download`, '_blank');
+    window.open(`/api/generations/${generationId}/download`, "_blank");
   };
 
   const handleExportCsv = (generationId: string) => {
-    window.open(`/api/generations/${generationId}/export-csv`, '_blank');
+    window.open(`/api/generations/${generationId}/export-csv`, "_blank");
   };
 
   if (loading) {
@@ -236,15 +267,23 @@ export default function HistoryPage() {
     <div>
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Generation History</h1>
-          <p className="text-sm md:text-base text-gray-600 mt-1">View and manage your generated Pinterest pins</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Generation History
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
+            View and manage your generated Pinterest pins
+          </p>
         </div>
         <button
           onClick={() => fetchGenerations(true)}
           disabled={refreshing}
           className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-900 text-sm md:text-base w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 md:w-5 md:h-5 ${
+              refreshing ? "animate-spin" : ""
+            }`}
+          />
           Refresh
         </button>
       </div>
@@ -267,7 +306,8 @@ export default function HistoryPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
                     <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                      Generation {new Date(generation.createdAt).toLocaleDateString()}
+                      Generation{" "}
+                      {new Date(generation.createdAt).toLocaleDateString()}
                     </h3>
                     <span
                       className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -294,8 +334,12 @@ export default function HistoryPage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(generation.status)}`}
-                        style={{ width: `${getProgressPercentage(generation)}%` }}
+                        className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(
+                          generation.status
+                        )}`}
+                        style={{
+                          width: `${getProgressPercentage(generation)}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -459,14 +503,18 @@ export default function HistoryPage() {
                       </label>
                       <div className="flex flex-col md:flex-row gap-3 md:gap-4">
                         <select
-                          value={selectedTemplates[image.id] || image.templateId || ''}
+                          value={
+                            selectedTemplates[image.id] ||
+                            image.templateId ||
+                            ""
+                          }
                           onChange={(e) =>
                             setSelectedTemplates({
                               ...selectedTemplates,
                               [image.id]: e.target.value,
                             })
                           }
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs md:text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs md:text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full"
                           disabled={changingTemplate[image.id]}
                         >
                           <option value="">Select a template</option>
@@ -478,7 +526,8 @@ export default function HistoryPage() {
                         </select>
                         <button
                           onClick={() => {
-                            const templateId = selectedTemplates[image.id] || image.templateId;
+                            const templateId =
+                              selectedTemplates[image.id] || image.templateId;
                             if (templateId) {
                               handleChangeTemplate(image.id, templateId);
                             }
@@ -555,7 +604,9 @@ export default function HistoryPage() {
                     className="bg-white rounded-lg border border-gray-200 overflow-hidden"
                   >
                     <div
-                      onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                      onClick={() =>
+                        setExpandedLog(expandedLog === log.id ? null : log.id)
+                      }
                       className="p-4 cursor-pointer flex items-start justify-between hover:bg-gray-50"
                     >
                       <div className="flex-1">
@@ -579,7 +630,9 @@ export default function HistoryPage() {
                             {log.action}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700 mt-1">{log.message}</p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {log.message}
+                        </p>
                       </div>
                       {expandedLog === log.id ? (
                         <ChevronUp className="w-5 h-5 text-gray-400" />

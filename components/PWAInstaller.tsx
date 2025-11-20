@@ -45,11 +45,11 @@ export default function PWAInstaller() {
       return;
     }
 
-    // Check if dismissed recently (24 hours)
+    // Check if dismissed recently (10 days)
     const dismissedTime = localStorage.getItem('pwa-install-dismissed');
     if (dismissedTime) {
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      if (Date.now() - parseInt(dismissedTime) < twentyFourHours) {
+      const tenDays = 10 * 24 * 60 * 60 * 1000;
+      if (Date.now() - parseInt(dismissedTime) < tenDays) {
         return;
       }
     }
@@ -115,7 +115,7 @@ export default function PWAInstaller() {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false);
-    // Show again in 24 hours
+    // Don't show again for 10 days
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
