@@ -389,10 +389,13 @@ model BulkGenerationRow {
   id               String @id @default(cuid())
   bulkGenerationId String
 
-  // Input data
-  keywords String @db.Text // Comma-separated or JSON keywords
-  imageUrl String          // URL or path to input image
-  quantity Int             // Number of pins to generate for this row
+  // Input data provided by user
+  keywords    String  @db.Text // Comma-separated or JSON keywords
+  imageUrl    String           // URL or path to input image
+  title       String?          // Base title to generate variations from
+  description String?  @db.Text // Base description to generate variations from
+  altText     String?  @db.Text // Base alt text to generate variations from
+  quantity    Int              // Number of pins to generate for this row
 
   // API responses for debugging
   apiResponses Json? @db.Json

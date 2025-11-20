@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
           create: rows.map((row: any) => ({
             keywords: row.keywords,
             imageUrl: row.imageUrl,
+            title: row.title || null,
+            description: row.description || null,
+            altText: row.altText || null,
             quantity: row.quantity,
             status: 'PENDING',
           })),

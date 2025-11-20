@@ -8,6 +8,9 @@ interface BulkGenerationRow {
   id: string;
   keywords: string;
   imageUrl: string;
+  title?: string | null;
+  description?: string | null;
+  altText?: string | null;
   quantity: number;
 }
 
@@ -179,31 +182,57 @@ async function processRow(
     imageGenApiKey.modelName ||
     "fal-ai/flux-pro/v1.1";
 
-  // Step 1: Describe the image
-  const describeResult = await describeImage(
-    row.imageUrl,
-    imageDescApiKey.apiKey,
-    imageDescModel
-  );
-  const imageDescription = describeResult.description;
-  apiResponses.imageDescription = describeResult.apiResponse;
+  // Check if user provided all required content for variation generation
+  const hasUserContent = row.title && row.description && row.altText;
 
-  // Step 2: Generate keyword data using the keyword search API
-  const keywordResult = await generateKeywords(
-    row.keywords,
-    imageDescription,
-    keywordSearchApiKey.apiKey,
-    keywordSearchModel
-  );
-  const keywordData = keywordResult.keywords;
-  apiResponses.keywordGeneration = keywordResult.apiResponse;
+  let contentData: Array<{ title: string; description: string; keywords: string[]; altText?: string }>;
+
+  if (hasUserContent) {
+    // NEW FLOW: Generate variations from user-provided content
+    console.log(`Using user-provided content for row ${row.id}`);
+
+    const variationsResult = await generateContentVariations(
+      row.title!,
+      row.description!,
+      row.keywords,
+      row.altText!,
+      row.quantity,
+      keywordSearchApiKey.apiKey,
+      keywordSearchModel
+    );
+
+    contentData = variationsResult.variations;
+    apiResponses.contentVariations = variationsResult.apiResponse;
+  } else {
+    // LEGACY FLOW: Generate from image description
+    console.log(`Using legacy flow (no user content provided) for row ${row.id}`);
+
+    // Step 1: Describe the image
+    const describeResult = await describeImage(
+      row.imageUrl,
+      imageDescApiKey.apiKey,
+      imageDescModel
+    );
+    const imageDescription = describeResult.description;
+    apiResponses.imageDescription = describeResult.apiResponse;
+
+    // Step 2: Generate keyword data using the keyword search API
+    const keywordResult = await generateKeywords(
+      row.keywords,
+      imageDescription,
+      keywordSearchApiKey.apiKey,
+      keywordSearchModel
+    );
+    contentData = keywordResult.keywords;
+    apiResponses.keywordGeneration = keywordResult.apiResponse;
+  }
 
   // Step 3: Generate all images for this row in a batch
   try {
     // Generate all images in a single batch request
     const imageGenResult = await generateImageBatch(
-      keywordData[0].title,
-      keywordData[0].description,
+      contentData[0].title,
+      contentData[0].description,
       imageGenApiKey.apiKey,
       imageGenModel,
       bulkGeneration.imageWidth,
@@ -213,20 +242,30 @@ async function processRow(
     const imageUrls = imageGenResult.imageUrls;
     apiResponses.imageGeneration = imageGenResult.apiResponse;
 
-    // Save each generated image with cycled keyword data
+    // Save each generated image with cycled content data
     for (let i = 0; i < imageUrls.length; i++) {
       try {
-        const pinData = keywordData[i % keywordData.length]; // Cycle through keyword data
+        const pinData = contentData[i % contentData.length]; // Cycle through content variations
         const imageUrl = imageUrls[i];
 
-        // Generate alt text for accessibility
-        const altTextResult = await generateAltText(
-          imageUrl,
-          pinData.title,
-          imageDescApiKey.apiKey,
-          imageDescModel
-        );
-        apiResponses.altTexts.push(altTextResult.apiResponse);
+        // Use provided alt text from variation or generate if not available
+        let finalAltText: string;
+
+        if (pinData.altText) {
+          // Use alt text from variation
+          finalAltText = pinData.altText;
+          console.log(`Using provided alt text for pin ${i + 1}`);
+        } else {
+          // Generate alt text using vision API
+          const altTextResult = await generateAltText(
+            imageUrl,
+            pinData.title,
+            imageDescApiKey.apiKey,
+            imageDescModel
+          );
+          finalAltText = altTextResult.altText;
+          apiResponses.altTexts.push(altTextResult.apiResponse);
+        }
 
         // Save generated pin
         await prisma.bulkGeneratedPin.create({
@@ -236,7 +275,7 @@ async function processRow(
             title: pinData.title,
             description: pinData.description,
             keywords: pinData.keywords,
-            altText: altTextResult.altText,
+            altText: finalAltText,
             status: "completed",
           },
         });
@@ -364,7 +403,108 @@ async function describeImage(
 }
 
 /**
- * Generate keyword data (titles, descriptions, keywords)
+ * Generate content variations from user-provided base content
+ */
+async function generateContentVariations(
+  baseTitle: string,
+  baseDescription: string,
+  baseKeywords: string,
+  baseAltText: string,
+  quantity: number,
+  apiKey: string,
+  model: string
+): Promise<{
+  variations: Array<{ title: string; description: string; keywords: string[]; altText: string }>;
+  apiResponse: any;
+}> {
+  try {
+    const prompt = `Create ${quantity} unique variations of the following Pinterest pin content. Each variation should have the SAME MEANING but use DIFFERENT words, phrases, and structure to make them unique.
+
+Base Content:
+- Title: ${baseTitle}
+- Description: ${baseDescription}
+- Keywords: ${baseKeywords}
+- Alt Text: ${baseAltText}
+
+Requirements for each variation:
+- Title: Same meaning as "${baseTitle}" but with different wording (30-70 characters)
+- Description: Same meaning as "${baseDescription}" but rephrased with different words and structure (150-250 characters). Include a call to action.
+- Keywords: Include ALL base keywords plus 2-3 NEW related keywords (8-10 total keywords)
+- Alt Text: Same meaning as "${baseAltText}" but rephrased differently (max 125 characters)
+
+IMPORTANT: Make each variation DISTINCTLY DIFFERENT in wording while preserving the core meaning.
+
+Return ONLY a valid JSON array with this exact format:
+[
+  {
+    "title": "Your unique title here",
+    "description": "Your unique description here with call to action.",
+    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6", "keyword7", "keyword8"],
+    "altText": "Your unique alt text here"
+  }
+]`;
+
+    // Determine API endpoint based on model
+    const endpoint = model.includes("deepseek")
+      ? "https://api.deepseek.com/v1/chat/completions"
+      : "https://api.openai.com/v1/chat/completions";
+
+    const requestData = {
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a creative Pinterest marketing expert skilled at creating diverse variations of content while preserving meaning. Generate unique, engaging variations that are distinctly different from each other. Always return valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.9, // High temperature for maximum variation
+      max_tokens: 3000,
+    };
+
+    const response = await axios.post(endpoint, requestData, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    const content = response.data.choices[0].message.content;
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+
+    if (!jsonMatch) {
+      throw new Error("No JSON array found in response");
+    }
+
+    const variations = JSON.parse(jsonMatch[0]);
+
+    return {
+      variations: variations.slice(0, quantity),
+      apiResponse: {
+        timestamp: new Date().toISOString(),
+        model,
+        endpoint,
+        request: {
+          baseTitle,
+          baseDescription: baseDescription.substring(0, 100) + "...",
+          baseKeywords,
+          quantity,
+        },
+        response: response.data,
+      },
+    };
+  } catch (error) {
+    console.error("Error generating content variations:", error);
+    throw new Error("Failed to generate content variations");
+  }
+}
+
+/**
+ * Generate keyword data (titles, descriptions, keywords) - Legacy function for backward compatibility
  */
 async function generateKeywords(
   baseKeywords: string,
