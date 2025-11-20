@@ -9,15 +9,61 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@gmail.com' },
-    update: {},
+    update: {
+      role: 'ADMIN',
+      isActive: true,
+    },
     create: {
       email: 'admin@gmail.com',
       password: hashedPassword,
       name: 'Admin',
+      role: 'ADMIN',
+      isActive: true,
     },
   });
 
   console.log('Admin user created:', admin);
+
+  // Create regular users for the team
+  const teamUserPassword = await bcrypt.hash('flexiglob@2025', 10);
+
+  const yassir = await prisma.user.upsert({
+    where: { email: 'yassir@flexiglob.com' },
+    update: {},
+    create: {
+      email: 'yassir@flexiglob.com',
+      password: teamUserPassword,
+      name: 'Yassir',
+      role: 'USER',
+      isActive: true,
+    },
+  });
+
+  const mohamed = await prisma.user.upsert({
+    where: { email: 'mohamed@flexiglob.com' },
+    update: {},
+    create: {
+      email: 'mohamed@flexiglob.com',
+      password: teamUserPassword,
+      name: 'Mohamed',
+      role: 'USER',
+      isActive: true,
+    },
+  });
+
+  const abdoulbari = await prisma.user.upsert({
+    where: { email: 'abdoulbari@flexiglob.com' },
+    update: {},
+    create: {
+      email: 'abdoulbari@flexiglob.com',
+      password: teamUserPassword,
+      name: 'Abdoulbari',
+      role: 'USER',
+      isActive: true,
+    },
+  });
+
+  console.log('Team users created:', { yassir: yassir.email, mohamed: mohamed.email, abdoulbari: abdoulbari.email });
 
   // Create production API keys from environment variables (if provided)
   const prodKeys = [];

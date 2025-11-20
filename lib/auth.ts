@@ -14,6 +14,7 @@ interface ExtendedJWT {
   id?: string;
   email?: string;
   name?: string;
+  role?: string;
   accessTokenExpires?: number;
   refreshToken?: string;
   error?: string;
@@ -89,6 +90,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid credentials');
         }
 
+        // Check if user is active
+        if (!user.isActive) {
+          throw new Error('Account is disabled. Please contact administrator.');
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
@@ -102,6 +108,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       },
     }),
@@ -119,6 +126,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        session.user.role = token.role as string;
 
         // If there's a refresh error, the session should be invalidated
         if (token.error === 'RefreshTokenError') {
@@ -143,6 +151,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name || user.email,
+          role: (user as any).role,
           accessTokenExpires,
           refreshToken,
         };

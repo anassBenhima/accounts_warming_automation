@@ -640,6 +640,51 @@ async function generateImageBatch(
       throw new Error("No images returned from fal.ai");
     }
 
+    // Use Seedream API for batch generation
+    if (model.includes("seedream")) {
+      const imageUrls: string[] = [];
+      const requestData = {
+        model,
+        prompt,
+        response_format: "url",
+        width,
+        height,
+        aspect_ratio: `${width}:${height}`,
+        stream: false,
+        watermark: false,
+      };
+
+      // Seedream doesn't support batch generation, so we generate images one by one
+      for (let i = 0; i < quantity; i++) {
+        const response = await axios.post(
+          "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.data?.[0]?.url) {
+          imageUrls.push(response.data.data[0].url);
+        } else {
+          throw new Error("No image URL returned from Seedream");
+        }
+      }
+
+      return {
+        imageUrls,
+        apiResponse: {
+          timestamp: new Date().toISOString(),
+          model,
+          request: requestData,
+          response: { generatedCount: imageUrls.length },
+        },
+      };
+    }
+
     // Fallback for other image generation APIs
     throw new Error("Unsupported image generation model");
   } catch (error) {
