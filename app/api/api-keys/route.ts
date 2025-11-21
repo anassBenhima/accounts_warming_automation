@@ -14,6 +14,7 @@ export async function GET() {
     }
 
     const logger = createUserLogger(session.user.id);
+    const isAdmin = session.user.role === 'ADMIN';
 
     const apiKeys = await logger.track(
       {
@@ -22,20 +23,122 @@ export async function GET() {
         message: 'Fetching API keys for user',
       },
       async () => {
-        return await prisma.apiKey.findMany({
-          where: { userId: session.user.id }, // Filter by user
-          orderBy: { createdAt: 'desc' },
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            modelName: true,
-            isActive: true,
-            createdAt: true,
-            // Don't return the actual API key for security
-            apiKey: false,
-          },
-        });
+        if (isAdmin) {
+          // Admins see ALL API keys
+          return await prisma.apiKey.findMany({
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              modelName: true,
+              isActive: true,
+              createdAt: true,
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              assignments: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+              // Don't return the actual API key for security
+              apiKey: false,
+            },
+          });
+        } else {
+          // Regular users see their own keys + keys assigned to them
+          const ownKeys = await prisma.apiKey.findMany({
+            where: { userId: session.user.id },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              modelName: true,
+              isActive: true,
+              createdAt: true,
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              assignments: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+              apiKey: false,
+            },
+          });
+
+          const assignedKeys = await prisma.apiKey.findMany({
+            where: {
+              assignments: {
+                some: {
+                  userId: session.user.id,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              modelName: true,
+              isActive: true,
+              createdAt: true,
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              assignments: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+              apiKey: false,
+            },
+          });
+
+          // Merge and deduplicate
+          const allKeys = [...ownKeys, ...assignedKeys];
+          const uniqueKeys = Array.from(
+            new Map(allKeys.map(key => [key.id, key])).values()
+          );
+
+          return uniqueKeys;
+        }
       }
     );
 

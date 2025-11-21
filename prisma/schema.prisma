@@ -81,6 +81,7 @@ model ImageToPrompt {
   prompt    String   @db.Text
   llmType   String   // "openai" or "deepseek"
   isActive  Boolean  @default(true)
+  isShared  Boolean  @default(false)  // Can other users see/use this?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -88,6 +89,7 @@ model ImageToPrompt {
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([isShared])
 }
 
 model ImageGenerationPrompt {
@@ -96,6 +98,7 @@ model ImageGenerationPrompt {
   name      String
   prompt    String   @db.Text
   isActive  Boolean  @default(true)
+  isShared  Boolean  @default(false)  // Can other users see/use this?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -103,6 +106,7 @@ model ImageGenerationPrompt {
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([isShared])
 }
 
 model KeywordSearchPrompt {
@@ -111,6 +115,7 @@ model KeywordSearchPrompt {
   name      String
   prompt    String   @db.Text
   isActive  Boolean  @default(true)
+  isShared  Boolean  @default(false)  // Can other users see/use this?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -118,6 +123,7 @@ model KeywordSearchPrompt {
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([isShared])
 }
 
 enum TemplateType {
@@ -160,6 +166,7 @@ model Template {
   previewPath String?
 
   isActive    Boolean  @default(true)
+  isShared    Boolean  @default(false)  // Can other users see/use this?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -169,6 +176,7 @@ model Template {
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([isShared])
 }
 
 enum GenerationStatus {
