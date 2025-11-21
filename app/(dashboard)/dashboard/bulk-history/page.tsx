@@ -36,6 +36,7 @@ export default function BulkHistoryPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [bulkGenerations, setBulkGenerations] = useState<BulkGeneration[]>([]);
   const [filteredBulkGenerations, setFilteredBulkGenerations] = useState<BulkGeneration[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -55,7 +56,8 @@ export default function BulkHistoryPage() {
     fetchBulkGenerations();
   }, []);
 
-  const fetchBulkGenerations = async () => {
+  const fetchBulkGenerations = async (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true);
     try {
       const response = await fetch('/api/bulk-generations');
       if (response.ok) {
@@ -70,6 +72,7 @@ export default function BulkHistoryPage() {
       toast.error('Failed to fetch bulk generations');
     } finally {
       setLoading(false);
+      if (showSpinner) setRefreshing(false);
     }
   };
 
@@ -161,10 +164,11 @@ export default function BulkHistoryPage() {
         </div>
         <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <button
-            onClick={fetchBulkGenerations}
-            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900 text-sm md:text-base w-full md:w-auto"
+            onClick={() => fetchBulkGenerations(true)}
+            disabled={refreshing}
+            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900 text-sm md:text-base w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw className="w-4 h-4 md:w-5 md:h-5" />
+            <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </button>
           <button
