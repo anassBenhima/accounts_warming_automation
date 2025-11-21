@@ -41,6 +41,8 @@ export default function BulkHistoryPage() {
   const [filteredBulkGenerations, setFilteredBulkGenerations] = useState<BulkGeneration[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareBulkGeneration, setShareBulkGeneration] = useState<BulkGeneration | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
@@ -50,7 +52,14 @@ export default function BulkHistoryPage() {
     } else {
       setFilteredBulkGenerations(bulkGenerations.filter((bulkGen) => bulkGen.user?.id === userId));
     }
+    setCurrentPage(1); // Reset to first page when filter changes
   };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredBulkGenerations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBulkGenerations = filteredBulkGenerations.slice(startIndex, endIndex);
 
   useEffect(() => {
     fetchBulkGenerations();
@@ -199,8 +208,9 @@ export default function BulkHistoryPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredBulkGenerations.map((bulkGen) => (
+        <>
+          <div className="space-y-4">
+            {paginatedBulkGenerations.map((bulkGen) => (
             <div
               key={bulkGen.id}
               className="border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow"
@@ -316,8 +326,58 @@ export default function BulkHistoryPage() {
                 </div>
               )}
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current page
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-4 py-2 rounded-lg text-sm ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Share Bulk Generation Modal */}
