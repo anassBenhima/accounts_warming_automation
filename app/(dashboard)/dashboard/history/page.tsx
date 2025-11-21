@@ -514,6 +514,16 @@ export default function HistoryPage() {
               </h2>
               <div className="flex flex-wrap items-center gap-2 md:gap-3">
                 <button
+                  onClick={() => {
+                    setRegenerateGeneration(selectedGeneration);
+                    setShowRegenerateModal(true);
+                  }}
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-xs md:text-sm"
+                >
+                  <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Regenerate</span>
+                </button>
+                <button
                   onClick={() => handleDownloadZip(selectedGeneration.id)}
                   className="flex items-center gap-2 px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all text-xs md:text-sm"
                 >
@@ -569,6 +579,11 @@ export default function HistoryPage() {
                     </h4>
                     <p className="text-xs md:text-sm text-gray-600 mb-3">
                       {image.description}
+                      {image.keywords && image.keywords.length > 0 && (
+                        <span className="text-blue-600">
+                          {' '}{image.keywords.map(k => `#${k}`).join(' ')}
+                        </span>
+                      )}
                     </p>
                     {image.altText && (
                       <div className="mb-3 p-2 bg-blue-50 rounded">

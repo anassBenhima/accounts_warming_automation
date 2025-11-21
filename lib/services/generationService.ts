@@ -102,12 +102,21 @@ export async function processGeneration(generationId: string) {
     console.log('Step 3: Generating images...');
     const templates = generation.generationTemplates.map((gt) => gt.template);
 
+    // Collect all keywords to maintain same context
+    const allKeywords = keywordsData.flatMap(data => data.Keywords);
+
     for (let i = 0; i < generation.quantity; i++) {
       try {
         const pinData = keywordsData[i] || keywordsData[0]; // Fallback to first if not enough data
 
-        // Create image generation prompt
-        let fullPrompt = `${imageGenPrompt.prompt}\n\nDescription: ${imageDescription}\n\nTitle: ${pinData.Title}\nKeywords: ${pinData.Keywords.join(', ')}`;
+        // Create image generation prompt using SAME context for all images
+        // Only use imageDescription and prompts, not individual pin titles
+        let fullPrompt = `${imageGenPrompt.prompt}\n\nDescription: ${imageDescription}`;
+
+        // Add variation note while maintaining context
+        if (generation.quantity > 1) {
+          fullPrompt += `\n\nGenerate variation ${i + 1} of ${generation.quantity} while maintaining the same core subject and context.`;
+        }
 
         // Add text instruction if requested
         if (generation.includeTextInImage) {
@@ -124,8 +133,16 @@ export async function processGeneration(generationId: string) {
           generation.imageHeight
         );
 
+        // Create generic title based on image description (not individual keywords)
+        const genericTitle = pinData.Title || `Generated Image ${i + 1}`;
+
+        // Create description with keywords appended with # prefix
+        const descriptionWithKeywords = pinData.description
+          ? `${pinData.description} ${pinData.Keywords.map((k: string) => `#${k}`).join(' ')}`
+          : imageDescription;
+
         // Download generated image
-        const originalPath = await downloadImage(generatedImageUrl, pinData.Title);
+        const originalPath = await downloadImage(generatedImageUrl, genericTitle);
 
         // Apply template or clean image
         let finalPath: string;
@@ -134,17 +151,17 @@ export async function processGeneration(generationId: string) {
         if (templates.length > 0) {
           // Apply random template
           const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-          finalPath = await applyTemplate(originalPath, randomTemplate, pinData.Title);
+          finalPath = await applyTemplate(originalPath, randomTemplate, genericTitle);
           templateId = randomTemplate.id;
         } else {
           // No template: just clean and optimize the image
-          finalPath = await cleanAndOptimizeImage(originalPath, pinData.Title);
+          finalPath = await cleanAndOptimizeImage(originalPath, genericTitle);
         }
 
         // Generate alt text for accessibility
         const altText = await generateAltText(
           finalPath,
-          pinData.Title,
+          genericTitle,
           imageDescApiKey.apiKey,
           imageDescApiKey.type,
           userId
@@ -152,8 +169,8 @@ export async function processGeneration(generationId: string) {
 
         // Add metadata to image
         await addMetadataToImage(finalPath, {
-          title: pinData.Title,
-          description: pinData.description,
+          title: genericTitle,
+          description: descriptionWithKeywords,
           keywords: pinData.Keywords,
         });
 
@@ -164,8 +181,8 @@ export async function processGeneration(generationId: string) {
             templateId,
             originalPath,
             finalPath,
-            title: pinData.Title,
-            description: pinData.description,
+            title: genericTitle,
+            description: descriptionWithKeywords,
             keywords: pinData.Keywords,
             altText,
             status: 'completed',

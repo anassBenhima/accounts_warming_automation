@@ -501,6 +501,11 @@ export default function BulkHistoryDetailPage() {
                       </h5>
                       <p className="text-xs md:text-sm text-gray-600 mb-2 line-clamp-3">
                         {pin.description}
+                        {pin.keywords && pin.keywords.length > 0 && (
+                          <span className="text-blue-600">
+                            {' '}{pin.keywords.map(k => `#${k}`).join(' ')}
+                          </span>
+                        )}
                       </p>
                       <div className="flex flex-wrap gap-1 mb-3">
                         {pin.keywords.slice(0, 3).map((keyword, i) => (
@@ -594,7 +599,14 @@ export default function BulkHistoryDetailPage() {
 
                   <div>
                     <h4 className="text-sm font-medium text-gray-600 mb-1">Description</h4>
-                    <p className="text-sm md:text-base text-gray-900">{selectedPin.description}</p>
+                    <p className="text-sm md:text-base text-gray-900">
+                      {selectedPin.description}
+                      {selectedPin.keywords && selectedPin.keywords.length > 0 && (
+                        <span className="text-blue-600">
+                          {' '}{selectedPin.keywords.map(k => `#${k}`).join(' ')}
+                        </span>
+                      )}
+                    </p>
                   </div>
 
                   {selectedPin.altText && (
