@@ -20,6 +20,7 @@ import {
   Layers,
   Archive,
   Users,
+  Zap,
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
@@ -28,6 +29,8 @@ import SessionErrorHandler from '@/components/SessionErrorHandler';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Quick Generation', href: '/dashboard/quick-generation', icon: Zap },
+  { name: 'New Generation', href: '/dashboard/new-generation', icon: Play },
   { name: 'History', href: '/dashboard/history', icon: History },
   { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers },
   { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive },
@@ -37,7 +40,6 @@ const navigation = [
   { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon },
   { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search },
   { name: 'Templates', href: '/dashboard/templates', icon: Palette },
-  { name: 'New Generation', href: '/dashboard/new-generation', icon: Play },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
