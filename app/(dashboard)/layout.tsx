@@ -44,6 +44,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showProfilePopover, setShowProfilePopover] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,6 +133,59 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* Notification Toggle */}
           <NotificationToggle />
+
+          {/* Profile Section */}
+          <div className="p-3 md:p-4 border-t border-gray-200 relative">
+            <button
+              onClick={() => setShowProfilePopover(!showProfilePopover)}
+              className="flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-all w-full text-sm md:text-base"
+            >
+              <div className="flex-shrink-0 h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                {session?.user?.name?.charAt(0).toUpperCase() || session?.user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 text-left overflow-hidden">
+                <div className="font-medium truncate text-sm">{session?.user?.name || 'User'}</div>
+                <div className="text-xs text-gray-500 truncate">{session?.user?.email}</div>
+              </div>
+            </button>
+
+            {/* Profile Popover */}
+            {showProfilePopover && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setShowProfilePopover(false)}
+                />
+                <div className="absolute bottom-full left-3 mb-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-40 p-4">
+                  <div className="mb-3 pb-3 border-b border-gray-200">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                        {session?.user?.name?.charAt(0).toUpperCase() || session?.user?.email?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <div className="font-semibold text-gray-900 truncate">{session?.user?.name || 'User'}</div>
+                        <div className="text-sm text-gray-500 truncate">{session?.user?.email}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      Role: <span className="font-medium text-purple-600">{session?.user?.role}</span>
+                    </div>
+                  </div>
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => {
+                      setShowProfilePopover(false);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Users className="w-4 h-4" />
+                    Edit Profile
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Logout */}
           <div className="p-3 md:p-4 border-t border-gray-200">

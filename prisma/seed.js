@@ -25,6 +25,28 @@ async function main() {
 
   console.log('Admin user created:', admin);
 
+  // Also update old admin@gmail.com account if it exists
+  try {
+    const oldAdmin = await prisma.user.findUnique({
+      where: { email: 'admin@gmail.com' }
+    });
+
+    if (oldAdmin) {
+      const oldAdminPassword = await bcrypt.hash('admin@123@admin', 10);
+      await prisma.user.update({
+        where: { email: 'admin@gmail.com' },
+        data: {
+          password: oldAdminPassword,
+          role: 'ADMIN',
+          isActive: true,
+        },
+      });
+      console.log('Updated old admin@gmail.com account password');
+    }
+  } catch (error) {
+    console.log('No old admin@gmail.com account found (this is normal)');
+  }
+
   // Create regular users for the team
   const teamUserPassword = await bcrypt.hash('flexiglob@2025', 10);
 
