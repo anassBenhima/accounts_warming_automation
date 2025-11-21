@@ -116,9 +116,9 @@ docker compose -f docker-compose.prod.yml start app
 After running the update, these accounts are available:
 
 ### Admin Account
-- Email: `admin@gmail.com`
-- Password: `admin@123@blogging`
-- Role: ADMIN (can manage users, see all data)
+- Email: `admin@flexiglob.com`
+- Password: `admin@123@admin`
+- Role: ADMIN (can manage users, see all data, assign API keys)
 
 ### Team Accounts
 - Email: `yassir@flexiglob.com` | Password: `flexiglob@2025` | Role: USER

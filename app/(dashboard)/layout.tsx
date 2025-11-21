@@ -19,6 +19,7 @@ import {
   X,
   Layers,
   Archive,
+  Users,
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
@@ -111,6 +112,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+
+            {/* Admin-only Users Module */}
+            {session?.user?.role === 'ADMIN' && (
+              <Link
+                href="/dashboard/users"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all text-sm md:text-base ${
+                  pathname === '/dashboard/users'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Users className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                <span className="font-medium">Users</span>
+              </Link>
+            )}
           </nav>
 
           {/* Notification Toggle */}
