@@ -21,6 +21,7 @@ import ApiResponseCard from "@/components/ApiResponseCard";
 import RegenerateModal from "@/components/RegenerateModal";
 import UserFilter from "@/components/UserFilter";
 import ShareGenerationModal from "@/components/ShareGenerationModal";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
 
 interface GeneratedImage {
   id: string;
@@ -104,6 +105,8 @@ export default function HistoryPage() {
   const [regenerateGeneration, setRegenerateGeneration] = useState<Generation | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareGeneration, setShareGeneration] = useState<Generation | null>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
@@ -530,7 +533,11 @@ export default function HistoryPage() {
                     {generation.generatedImages.slice(0, 6).map((image) => (
                       <div
                         key={image.id}
-                        className="relative aspect-square bg-gray-100 rounded overflow-hidden"
+                        onClick={() => {
+                          setPreviewImage(image);
+                          setShowImagePreview(true);
+                        }}
+                        className="relative aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                       >
                         {image.finalPath && (
                           <Image
@@ -868,6 +875,22 @@ export default function HistoryPage() {
           generationId={shareGeneration.id}
           generationType="single"
           generationName={`Generation from ${new Date(shareGeneration.createdAt).toLocaleDateString()}`}
+        />
+      )}
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <ImagePreviewModal
+          isOpen={showImagePreview}
+          onClose={() => {
+            setShowImagePreview(false);
+            setPreviewImage(null);
+          }}
+          imageUrl={previewImage.finalPath}
+          title={previewImage.title}
+          description={previewImage.description}
+          keywords={previewImage.keywords}
+          altText={previewImage.altText}
         />
       )}
     </div>

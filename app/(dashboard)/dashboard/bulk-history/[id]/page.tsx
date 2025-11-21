@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, Download, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
 import ApiResponseCard from '@/components/ApiResponseCard';
 import RegenerateModal from '@/components/RegenerateModal';
+import ImagePreviewModal from '@/components/ImagePreviewModal';
 
 interface GeneratedPin {
   id: string;
@@ -76,6 +77,8 @@ export default function BulkHistoryDetailPage() {
   const [selectedPin, setSelectedPin] = useState<GeneratedPin | null>(null);
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [regenerateRow, setRegenerateRow] = useState<Row | null>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewPin, setPreviewPin] = useState<GeneratedPin | null>(null);
 
   useEffect(() => {
     fetchBulkGeneration();
@@ -493,7 +496,13 @@ export default function BulkHistoryDetailPage() {
                       key={pin.id}
                       className="border rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow"
                     >
-                      <div className="relative w-full h-48 md:h-64 mb-3 bg-gray-100 rounded-lg overflow-hidden">
+                      <div
+                        onClick={() => {
+                          setPreviewPin(pin);
+                          setShowImagePreview(true);
+                        }}
+                        className="relative w-full h-48 md:h-64 mb-3 bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                      >
                         <Image
                           src={pin.localImagePath || pin.imageUrl}
                           alt={pin.title}
@@ -678,6 +687,22 @@ export default function BulkHistoryDetailPage() {
             imageDescApiKeyId: bulkGeneration.imageDescApiKeyId,
             imageDescModel: bulkGeneration.imageDescModel || undefined,
           }}
+        />
+      )}
+
+      {/* Image Preview Modal */}
+      {previewPin && (
+        <ImagePreviewModal
+          isOpen={showImagePreview}
+          onClose={() => {
+            setShowImagePreview(false);
+            setPreviewPin(null);
+          }}
+          imageUrl={previewPin.localImagePath || previewPin.imageUrl}
+          title={previewPin.title}
+          description={previewPin.description}
+          keywords={previewPin.keywords}
+          altText={previewPin.altText}
         />
       )}
     </div>
