@@ -13,12 +13,14 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import ApiResponseCard from "@/components/ApiResponseCard";
 import RegenerateModal from "@/components/RegenerateModal";
 import UserFilter from "@/components/UserFilter";
+import ShareGenerationModal from "@/components/ShareGenerationModal";
 
 interface GeneratedImage {
   id: string;
@@ -100,6 +102,8 @@ export default function HistoryPage() {
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [regenerateGeneration, setRegenerateGeneration] = useState<Generation | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareGeneration, setShareGeneration] = useState<Generation | null>(null);
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
@@ -501,6 +505,19 @@ export default function HistoryPage() {
                     <FileText className="w-3 h-3 md:w-4 md:h-4" />
                     Logs
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setShareGeneration(generation);
+                        setShowShareModal(true);
+                      }}
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-all text-xs md:text-sm"
+                      title="Share with team"
+                    >
+                      <Users className="w-3 h-3 md:w-4 md:h-4" />
+                      Share
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -837,6 +854,20 @@ export default function HistoryPage() {
             imageDescApiKeyId: regenerateGeneration.imageDescApiKeyId,
             imageDescModel: regenerateGeneration.imageDescModel,
           }}
+        />
+      )}
+
+      {/* Share Generation Modal */}
+      {shareGeneration && (
+        <ShareGenerationModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setShareGeneration(null);
+          }}
+          generationId={shareGeneration.id}
+          generationType="single"
+          generationName={`Generation from ${new Date(shareGeneration.createdAt).toLocaleDateString()}`}
         />
       )}
     </div>

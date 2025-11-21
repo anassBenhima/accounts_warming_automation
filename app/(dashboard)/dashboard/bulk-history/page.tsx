@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { Eye, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { Eye, Trash2, Loader2, RefreshCw, Users } from 'lucide-react';
 import UserFilter from '@/components/UserFilter';
+import ShareGenerationModal from '@/components/ShareGenerationModal';
 
 interface BulkGeneration {
   id: string;
@@ -37,6 +38,8 @@ export default function BulkHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [bulkGenerations, setBulkGenerations] = useState<BulkGeneration[]>([]);
   const [filteredBulkGenerations, setFilteredBulkGenerations] = useState<BulkGeneration[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareBulkGeneration, setShareBulkGeneration] = useState<BulkGeneration | null>(null);
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
@@ -240,6 +243,19 @@ export default function BulkHistoryPage() {
                     <Eye className="w-4 h-4 md:w-5 md:h-5" />
                     View Details
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setShareBulkGeneration(bulkGen);
+                        setShowShareModal(true);
+                      }}
+                      className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 text-sm md:text-base w-full md:w-auto"
+                      title="Share with team"
+                    >
+                      <Users className="w-4 h-4 md:w-5 md:h-5" />
+                      Share
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(bulkGen.id, bulkGen.name)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg w-full md:w-auto"
@@ -298,6 +314,20 @@ export default function BulkHistoryPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Share Bulk Generation Modal */}
+      {shareBulkGeneration && (
+        <ShareGenerationModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setShareBulkGeneration(null);
+          }}
+          generationId={shareBulkGeneration.id}
+          generationType="bulk"
+          generationName={shareBulkGeneration.name}
+        />
       )}
     </div>
   );
