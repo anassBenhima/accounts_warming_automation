@@ -2,13 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Edit2, Upload, Eye } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import ConfirmModal from '@/components/ConfirmModal';
 
 interface Template {
   id: string;
+  userId: string;
   name: string;
   type: string;
+  isShared: boolean;
+  user?: { id: string; name: string; email: string };
   filePath: string | null;
   positionX: number | null;
   positionY: number | null;
@@ -26,6 +30,7 @@ interface Template {
 }
 
 export default function TemplatesPage() {
+  const { data: session } = useSession();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -154,6 +159,22 @@ export default function TemplatesPage() {
       }
     } catch (error) {
       console.error('Error updating template:', error);
+    }
+  };
+
+  const toggleSharing = async (id: string, isShared: boolean) => {
+    try {
+      const response = await fetch(`/api/templates/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isShared }),
+      });
+
+      if (response.ok) {
+        fetchTemplates();
+      }
+    } catch (error) {
+      console.error('Error updating template sharing:', error);
     }
   };
 
@@ -312,6 +333,24 @@ export default function TemplatesPage() {
                 >
                   {getTypeLabel(template.type)}
                 </span>
+
+                <div className="mb-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={template.isShared}
+                      onChange={() => toggleSharing(template.id, !template.isShared)}
+                      disabled={template.userId !== session?.user?.id}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <span className="text-xs text-gray-700">Share with team</span>
+                  </label>
+                  {template.user && template.userId !== session?.user?.id && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Shared by {template.user.name}
+                    </p>
+                  )}
+                </div>
 
                 <div className="text-xs text-gray-500 space-y-1 mb-3 md:mb-4">
                   {template.positionX !== null && (

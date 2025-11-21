@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Eye, EyeOff, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Eye, EyeOff, Edit2, Check, X, Users } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import ConfirmModal from '@/components/ConfirmModal';
 
 interface ApiKey {
@@ -11,9 +12,31 @@ interface ApiKey {
   modelName: string | null;
   isActive: boolean;
   createdAt: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  assignments?: Array<{
+    id: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 export default function ApiKeysPage() {
+  const { data: session } = useSession();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -30,10 +53,23 @@ export default function ApiKeysPage() {
     isOpen: false,
     id: null,
   });
+  const [managingKey, setManagingKey] = useState<ApiKey | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   useEffect(() => {
     fetchApiKeys();
   }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetch('/api/users/list')
+        .then((res) => res.json())
+        .then(setAllUsers)
+        .catch((error) => console.error('Error fetching users:', error));
+    }
+  }, [isAdmin]);
 
   const fetchApiKeys = async () => {
     try {
@@ -139,6 +175,46 @@ export default function ApiKeysPage() {
       }
     } catch (error) {
       console.error('Error updating API key:', error);
+    }
+  };
+
+  const assignKeyToUser = async (keyId: string, userId: string) => {
+    try {
+      const response = await fetch(`/api/api-keys/${keyId}/assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        fetchApiKeys();
+        // Update the managingKey state to reflect new assignment
+        if (managingKey) {
+          const updated = apiKeys.find((k) => k.id === keyId);
+          if (updated) setManagingKey(updated);
+        }
+      }
+    } catch (error) {
+      console.error('Error assigning API key:', error);
+    }
+  };
+
+  const removeAssignment = async (keyId: string, userId: string) => {
+    try {
+      const response = await fetch(`/api/api-keys/${keyId}/assignments?userId=${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchApiKeys();
+        // Update the managingKey state to reflect removed assignment
+        if (managingKey) {
+          const updated = apiKeys.find((k) => k.id === keyId);
+          if (updated) setManagingKey(updated);
+        }
+      }
+    } catch (error) {
+      console.error('Error removing assignment:', error);
     }
   };
 
@@ -266,6 +342,25 @@ export default function ApiKeysPage() {
                       Model: {key.modelName}
                     </p>
                   )}
+                  {isAdmin && key.user && (
+                    <div className="mb-2">
+                      <p className="text-xs text-gray-600">
+                        <span className="font-medium">Owner:</span> {key.user.name} ({key.user.email})
+                      </p>
+                      {key.assignments && key.assignments.length > 0 && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Assigned to {key.assignments.length} user(s)
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {!isAdmin && key.userId !== session?.user?.id && (
+                    <div className="mb-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Assigned to you by {key.user?.name}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 mt-2 overflow-x-auto">
                     <p className="text-xs text-gray-500 font-mono break-all">
                       {visibleKeys[key.id] ? visibleKeys[key.id] : '••••••••••••••••'}
@@ -287,6 +382,15 @@ export default function ApiKeysPage() {
                       <Eye className="w-4 h-4 md:w-5 md:h-5" />
                     )}
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setManagingKey(key)}
+                      className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
+                      title="Manage Access"
+                    >
+                      <Users className="w-4 h-4 md:w-5 md:h-5" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleEdit(key.id)}
                     className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
@@ -418,6 +522,87 @@ export default function ApiKeysPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Assignment Management Modal */}
+      {managingKey && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 md:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
+              Manage Access: {managingKey.name}
+            </h3>
+
+            {/* Current Assignments */}
+            <div className="mb-6">
+              <h4 className="font-medium text-gray-900 mb-3">Assigned To:</h4>
+              {managingKey.assignments && managingKey.assignments.length > 0 ? (
+                <div className="space-y-2">
+                  {managingKey.assignments.map((assignment) => (
+                    <div
+                      key={assignment.id}
+                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {assignment.user.name}
+                        </p>
+                        <p className="text-xs text-gray-500">{assignment.user.email}</p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          removeAssignment(managingKey.id, assignment.user.id)
+                        }
+                        className="px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-all"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  No users assigned yet
+                </p>
+              )}
+            </div>
+
+            {/* Add User */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Assign to User:
+              </label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    assignKeyToUser(managingKey.id, e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900"
+              >
+                <option value="">Select User...</option>
+                {allUsers
+                  .filter(
+                    (u) =>
+                      u.id !== managingKey.userId &&
+                      !managingKey.assignments?.some((a) => a.user.id === u.id)
+                  )
+                  .map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => setManagingKey(null)}
+              className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

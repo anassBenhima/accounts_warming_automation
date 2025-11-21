@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   RefreshCw,
   Download,
@@ -17,6 +18,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import ApiResponseCard from "@/components/ApiResponseCard";
 import RegenerateModal from "@/components/RegenerateModal";
+import UserFilter from "@/components/UserFilter";
 
 interface GeneratedImage {
   id: string;
@@ -47,6 +49,7 @@ interface SystemLog {
 
 interface Generation {
   id: string;
+  userId: string;
   quantity: number;
   status: string;
   createdAt: string;
@@ -69,11 +72,18 @@ interface Generation {
     template: Template;
   }>;
   generatedImages: GeneratedImage[];
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export default function HistoryPage() {
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [generations, setGenerations] = useState<Generation[]>([]);
+  const [filteredGenerations, setFilteredGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedGeneration, setSelectedGeneration] =
@@ -90,6 +100,16 @@ export default function HistoryPage() {
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [regenerateGeneration, setRegenerateGeneration] = useState<Generation | null>(null);
+
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+  const handleFilterChange = (userId: string | null) => {
+    if (!userId) {
+      setFilteredGenerations(generations);
+    } else {
+      setFilteredGenerations(generations.filter((gen) => gen.userId === userId));
+    }
+  };
 
   useEffect(() => {
     fetchGenerations();
@@ -131,6 +151,7 @@ export default function HistoryPage() {
       const response = await fetch("/api/generations");
       const data = await response.json();
       setGenerations(data);
+      setFilteredGenerations(data);
     } catch (error) {
       console.error("Error fetching generations:", error);
     } finally {
@@ -373,15 +394,19 @@ export default function HistoryPage() {
         </button>
       </div>
 
-      {generations.length === 0 ? (
+      <UserFilter onFilterChange={handleFilterChange} />
+
+      {filteredGenerations.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12 text-center">
           <p className="text-sm md:text-base text-gray-500">
-            No generations yet. Start your first generation process!
+            {generations.length === 0
+              ? "No generations yet. Start your first generation process!"
+              : "No generations found for the selected filter."}
           </p>
         </div>
       ) : (
         <div className="space-y-3 md:space-y-4">
-          {generations.map((generation) => (
+          {filteredGenerations.map((generation) => (
             <div
               key={generation.id}
               id={`generation-${generation.id}`}
@@ -405,7 +430,22 @@ export default function HistoryPage() {
                   <p className="text-xs md:text-sm text-gray-600">
                     Quantity: {generation.quantity} pins
                   </p>
-                  <p className="text-xs text-gray-500">
+                  {generation.user && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                        {generation.user.name?.charAt(0) || 'U'}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-900">
+                          {generation.user.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {generation.user.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
                     Created: {new Date(generation.createdAt).toLocaleString()}
                   </p>
 

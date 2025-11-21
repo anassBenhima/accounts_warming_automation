@@ -13,14 +13,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const isAdmin = session.user.role === 'ADMIN';
+
     const bulkGenerations = await prisma.bulkGeneration.findMany({
-      where: { userId: session.user.id },
+      where: isAdmin ? {} : { userId: session.user.id }, // Admins see all, users see own
       include: {
         rows: {
           include: {
             _count: {
               select: { generatedPins: true },
             },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
       },

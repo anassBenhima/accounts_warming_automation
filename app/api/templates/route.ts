@@ -12,6 +12,7 @@ export async function GET() {
     }
 
     const logger = createUserLogger(session.user.id);
+    const isAdmin = session.user.role === 'ADMIN';
 
     const templates = await logger.track(
       {
@@ -21,7 +22,23 @@ export async function GET() {
       },
       async () => {
         return await prisma.template.findMany({
-          where: { userId: session.user.id }, // Filter by user
+          where: isAdmin
+            ? {} // Admin sees all
+            : {
+                OR: [
+                  { userId: session.user.id }, // Own templates
+                  { isShared: true }, // Shared templates
+                ],
+              },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
           orderBy: { createdAt: 'desc' },
         });
       }

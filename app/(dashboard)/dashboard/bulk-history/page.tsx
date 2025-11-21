@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { Eye, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import UserFilter from '@/components/UserFilter';
 
 interface BulkGeneration {
   id: string;
@@ -22,12 +24,29 @@ interface BulkGeneration {
       generatedPins: number;
     };
   }>;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export default function BulkHistoryPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [bulkGenerations, setBulkGenerations] = useState<BulkGeneration[]>([]);
+  const [filteredBulkGenerations, setFilteredBulkGenerations] = useState<BulkGeneration[]>([]);
+
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+  const handleFilterChange = (userId: string | null) => {
+    if (!userId) {
+      setFilteredBulkGenerations(bulkGenerations);
+    } else {
+      setFilteredBulkGenerations(bulkGenerations.filter((bulkGen) => bulkGen.user?.id === userId));
+    }
+  };
 
   useEffect(() => {
     fetchBulkGenerations();
@@ -39,6 +58,7 @@ export default function BulkHistoryPage() {
       if (response.ok) {
         const data = await response.json();
         setBulkGenerations(data);
+        setFilteredBulkGenerations(data);
       } else {
         toast.error('Failed to fetch bulk generations');
       }
@@ -153,19 +173,27 @@ export default function BulkHistoryPage() {
         </div>
       </div>
 
-      {bulkGenerations.length === 0 ? (
+      <UserFilter onFilterChange={handleFilterChange} />
+
+      {filteredBulkGenerations.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <p className="text-sm md:text-base text-gray-900 mb-4">No bulk generations yet</p>
-          <button
-            onClick={() => router.push('/dashboard/bulk-generation')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
-          >
-            Create Your First Bulk Generation
-          </button>
+          <p className="text-sm md:text-base text-gray-900 mb-4">
+            {bulkGenerations.length === 0
+              ? "No bulk generations yet"
+              : "No bulk generations found for the selected filter"}
+          </p>
+          {bulkGenerations.length === 0 && (
+            <button
+              onClick={() => router.push('/dashboard/bulk-generation')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
+            >
+              Create Your First Bulk Generation
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {bulkGenerations.map((bulkGen) => (
+          {filteredBulkGenerations.map((bulkGen) => (
             <div
               key={bulkGen.id}
               className="border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow"
@@ -185,7 +213,22 @@ export default function BulkHistoryPage() {
                       <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                     )}
                   </div>
-                  <p className="text-xs md:text-sm text-gray-900">
+                  {bulkGen.user && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                        {bulkGen.user.name?.charAt(0) || 'U'}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-900">
+                          {bulkGen.user.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {bulkGen.user.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-xs md:text-sm text-gray-500">
                     Created {format(new Date(bulkGen.createdAt), 'MMM d, yyyy h:mm a')}
                   </p>
                 </div>

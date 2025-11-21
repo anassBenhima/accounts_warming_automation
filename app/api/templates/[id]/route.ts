@@ -14,9 +14,32 @@ export async function PUT(
     }
 
     const body = await request.json();
+    const { id } = await params;
 
-    const template = await prisma.template.update({
-      where: { id: (await params).id },
+    // If updating isShared, verify ownership
+    if (body.isShared !== undefined) {
+      const template = await prisma.template.findUnique({
+        where: { id },
+        select: { userId: true },
+      });
+
+      if (!template) {
+        return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      }
+
+      const isAdmin = session.user.role === 'ADMIN';
+      const isOwner = template.userId === session.user.id;
+
+      if (!isAdmin && !isOwner) {
+        return NextResponse.json(
+          { error: 'Only the owner or admin can change sharing status' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const updatedTemplate = await prisma.template.update({
+      where: { id },
       data: {
         ...(body.name && { name: body.name }),
         ...(body.type && { type: body.type }),
@@ -32,10 +55,11 @@ export async function PUT(
         ...(body.fontFamily !== undefined && { fontFamily: body.fontFamily }),
         ...(body.previewPath !== undefined && { previewPath: body.previewPath }),
         ...(body.isActive !== undefined && { isActive: body.isActive }),
+        ...(body.isShared !== undefined && { isShared: body.isShared }),
       },
     });
 
-    return NextResponse.json(template);
+    return NextResponse.json(updatedTemplate);
   } catch (error) {
     console.error('Error updating template:', error);
     return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });

@@ -13,6 +13,7 @@ export async function GET() {
     }
 
     const logger = createUserLogger(session.user.id);
+    const isAdmin = session.user.role === 'ADMIN';
 
     const generations = await logger.track(
       {
@@ -22,10 +23,11 @@ export async function GET() {
       },
       async () => {
         return await prisma.generation.findMany({
-          where: { userId: session.user.id }, // Filter by user
+          where: isAdmin ? {} : { userId: session.user.id }, // Admins see all, users see own
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
+            userId: true,
             quantity: true,
             status: true,
             createdAt: true,
@@ -48,6 +50,13 @@ export async function GET() {
             generationTemplates: {
               include: {
                 template: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
           },
