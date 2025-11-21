@@ -90,7 +90,7 @@ export async function POST(
               status: row.status,
               completedPins: row.completedPins,
               failedPins: row.failedPins,
-              apiResponses: row.apiResponses,
+              apiResponses: row.apiResponses ?? undefined,
             },
           });
 
