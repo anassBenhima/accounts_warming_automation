@@ -37,11 +37,16 @@ export async function POST(
 
     const logger = createUserLogger(session.user.id);
 
-    // Fetch the original generation
-    const originalGeneration = await prisma.generatedImage.findUnique({
+    // Fetch the original generation with all its data
+    const originalGeneration = await prisma.generation.findUnique({
       where: { id },
       include: {
-        template: true,
+        generatedImages: true,
+        generationTemplates: {
+          include: {
+            template: true,
+          },
+        },
       },
     });
 
@@ -52,25 +57,58 @@ export async function POST(
     // Duplicate for each target user
     const duplicatedGenerations = await Promise.all(
       targetUserIds.map(async (targetUserId: string) => {
-        return await prisma.generatedImage.create({
+        // Create the generation copy
+        const newGeneration = await prisma.generation.create({
           data: {
             userId: targetUserId,
-            prompt: originalGeneration.prompt,
-            negativePrompt: originalGeneration.negativePrompt,
-            imageUrl: originalGeneration.imageUrl,
-            generatedImagePath: originalGeneration.generatedImagePath,
-            templateId: originalGeneration.templateId,
-            width: originalGeneration.width,
-            height: originalGeneration.height,
-            apiKeyId: originalGeneration.apiKeyId,
-            model: originalGeneration.model,
-            generatedTitle: originalGeneration.generatedTitle,
-            generatedDescription: originalGeneration.generatedDescription,
-            generatedAltText: originalGeneration.generatedAltText,
-            generatedKeywords: originalGeneration.generatedKeywords,
-            status: 'completed',
+            imageGenApiKeyId: originalGeneration.imageGenApiKeyId,
+            keywordSearchApiKeyId: originalGeneration.keywordSearchApiKeyId,
+            imageDescApiKeyId: originalGeneration.imageDescApiKeyId,
+            imageGenModel: originalGeneration.imageGenModel,
+            imageDescModel: originalGeneration.imageDescModel,
+            includeTextInImage: originalGeneration.includeTextInImage,
+            quantity: originalGeneration.quantity,
+            imageWidth: originalGeneration.imageWidth,
+            imageHeight: originalGeneration.imageHeight,
+            uploadedImagePath: originalGeneration.uploadedImagePath,
+            additionalKeywords: originalGeneration.additionalKeywords,
+            imageToPromptId: originalGeneration.imageToPromptId,
+            imageGenerationPromptId: originalGeneration.imageGenerationPromptId,
+            keywordSearchPromptId: originalGeneration.keywordSearchPromptId,
+            imageDescription: originalGeneration.imageDescription,
+            apiResponses: originalGeneration.apiResponses ?? undefined,
+            status: 'COMPLETED',
           },
         });
+
+        // Duplicate all generated images
+        for (const image of originalGeneration.generatedImages) {
+          await prisma.generatedImage.create({
+            data: {
+              generationId: newGeneration.id,
+              templateId: image.templateId,
+              originalPath: image.originalPath,
+              finalPath: image.finalPath,
+              title: image.title,
+              description: image.description,
+              keywords: image.keywords,
+              altText: image.altText,
+              status: image.status,
+            },
+          });
+        }
+
+        // Duplicate generation templates
+        for (const genTemplate of originalGeneration.generationTemplates) {
+          await prisma.generationTemplate.create({
+            data: {
+              generationId: newGeneration.id,
+              templateId: genTemplate.templateId,
+            },
+          });
+        }
+
+        return newGeneration;
       })
     );
 
