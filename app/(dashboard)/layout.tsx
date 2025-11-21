@@ -21,6 +21,7 @@ import {
   Archive,
   Users,
   Zap,
+  Code,
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
@@ -40,6 +41,7 @@ const navigation = [
   { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon },
   { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search },
   { name: 'Templates', href: '/dashboard/templates', icon: Palette },
+  { name: 'HTML Templates', href: '/dashboard/html-templates', icon: Code },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
