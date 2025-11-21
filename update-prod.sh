@@ -26,11 +26,11 @@ docker compose -f docker-compose.prod.yml build app
 # Apply database migrations safely (WITHOUT --accept-data-loss)
 echo "🗄️ Applying database schema updates..."
 echo "⚠️ This will ADD new columns but will NOT drop existing data"
-docker compose -f docker-compose.prod.yml run --rm app npx prisma db push
+docker compose -f docker-compose.prod.yml run --rm app npm run prisma:push
 
 # Run seed to create new users (will skip if they already exist)
 echo "🌱 Creating new users (if they don't exist)..."
-docker compose -f docker-compose.prod.yml run --rm app node prisma/seed.js
+docker compose -f docker-compose.prod.yml run --rm app npm run prisma:seed
 
 # Restart the application with new code
 echo "🔄 Restarting application with new code..."
