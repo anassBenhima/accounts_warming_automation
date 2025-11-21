@@ -12,6 +12,7 @@ import RegenerateModal from '@/components/RegenerateModal';
 interface GeneratedPin {
   id: string;
   imageUrl: string;
+  localImagePath?: string | null;
   title: string;
   description: string;
   keywords: string[];
@@ -170,11 +171,16 @@ export default function BulkHistoryDetailPage() {
 
     bulkGeneration.rows.forEach((row) => {
       row.generatedPins.forEach((pin) => {
+        // Use local image path if available, otherwise fall back to API URL
+        const imageUrl = pin.localImagePath
+          ? `${window.location.origin}${pin.localImagePath}`
+          : pin.imageUrl;
+
         csvData.push([
           escapeCSV(pin.title),
           escapeCSV(pin.description),
           escapeCSV(pin.keywords.join(', ')),
-          escapeCSV(pin.imageUrl),
+          escapeCSV(imageUrl),
           escapeCSV((pin as any).altText || pin.title), // Use altText or fallback to title
         ]);
       });
@@ -489,7 +495,7 @@ export default function BulkHistoryDetailPage() {
                     >
                       <div className="relative w-full h-48 md:h-64 mb-3 bg-gray-100 rounded-lg overflow-hidden">
                         <Image
-                          src={pin.imageUrl}
+                          src={pin.localImagePath || pin.imageUrl}
                           alt={pin.title}
                           fill
                           className="object-cover"

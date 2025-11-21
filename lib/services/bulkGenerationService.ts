@@ -3,6 +3,7 @@ import axios from "axios";
 import { createUserLogger } from "@/lib/logger";
 import { sendPushNotification } from "@/lib/pushNotification";
 import { fal } from "@fal-ai/client";
+import { downloadAndSaveImage } from "@/lib/utils/imageDownloader";
 
 interface BulkGenerationRow {
   id: string;
@@ -275,11 +276,22 @@ async function processRow(
           apiResponses.altTexts.push(altTextResult.apiResponse);
         }
 
-        // Save generated pin
+        // Download and save the image locally
+        let localImagePath: string | null = null;
+        try {
+          localImagePath = await downloadAndSaveImage(imageUrl, `generated/bulk/${bulkGenerationId}`);
+          console.log(`Image downloaded and saved locally: ${localImagePath}`);
+        } catch (downloadError) {
+          console.error(`Failed to download image for pin ${i + 1}:`, downloadError);
+          // Continue anyway - we still have the API URL
+        }
+
+        // Save generated pin with both API URL and local path
         await prisma.bulkGeneratedPin.create({
           data: {
             rowId: row.id,
             imageUrl,
+            localImagePath,
             title: pinData.title,
             description: pinData.description,
             keywords: pinData.keywords,
