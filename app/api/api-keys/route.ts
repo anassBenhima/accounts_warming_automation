@@ -31,6 +31,7 @@ export async function GET() {
               id: true,
               name: true,
               type: true,
+              usageType: true,
               modelName: true,
               isActive: true,
               createdAt: true,
@@ -66,6 +67,7 @@ export async function GET() {
               id: true,
               name: true,
               type: true,
+              usageType: true,
               modelName: true,
               isActive: true,
               createdAt: true,
@@ -105,6 +107,7 @@ export async function GET() {
               id: true,
               name: true,
               type: true,
+              usageType: true,
               modelName: true,
               isActive: true,
               createdAt: true,
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type, apiKey, modelName } = body;
+    const { name, type, usageType, apiKey, modelName } = body;
 
     if (!name || !type || !apiKey) {
       return NextResponse.json(
@@ -178,7 +181,7 @@ export async function POST(request: NextRequest) {
         module: 'API_KEY',
         action: 'create',
         message: 'Creating new API key',
-        input: { name, type, modelName },
+        input: { name, type, usageType, modelName },
       },
       async () => {
         return await prisma.apiKey.create({
@@ -186,6 +189,7 @@ export async function POST(request: NextRequest) {
             userId: session.user.id, // Link to user
             name,
             type,
+            usageType: usageType || 'all',
             apiKey,
             modelName,
           },

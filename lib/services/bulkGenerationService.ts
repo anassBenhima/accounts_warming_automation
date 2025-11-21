@@ -185,7 +185,12 @@ async function processRow(
   // Check if user provided all required content for variation generation
   const hasUserContent = row.title && row.description && row.altText;
 
-  let contentData: Array<{ title: string; description: string; keywords: string[]; altText?: string }>;
+  let contentData: Array<{
+    title: string;
+    description: string;
+    keywords: string[];
+    altText?: string;
+  }>;
 
   if (hasUserContent) {
     // NEW FLOW: Generate variations from user-provided content
@@ -205,7 +210,9 @@ async function processRow(
     apiResponses.contentVariations = variationsResult.apiResponse;
   } else {
     // LEGACY FLOW: Generate from image description
-    console.log(`Using legacy flow (no user content provided) for row ${row.id}`);
+    console.log(
+      `Using legacy flow (no user content provided) for row ${row.id}`
+    );
 
     // Step 1: Describe the image
     const describeResult = await describeImage(
@@ -260,6 +267,7 @@ async function processRow(
           const altTextResult = await generateAltText(
             imageUrl,
             pinData.title,
+            pinData.description,
             imageDescApiKey.apiKey,
             imageDescModel
           );
@@ -336,7 +344,8 @@ async function describeImage(
         "Vision API not supported for this model, using fallback description"
       );
       return {
-        description: "A delicious food image with vibrant colors and appetizing presentation.",
+        description:
+          "A delicious food image with vibrant colors and appetizing presentation.",
         apiResponse: {
           timestamp: new Date().toISOString(),
           model,
@@ -391,7 +400,8 @@ async function describeImage(
   } catch (error) {
     console.error("Error describing image:", error);
     return {
-      description: "A delicious food image with vibrant colors and appetizing presentation.",
+      description:
+        "A delicious food image with vibrant colors and appetizing presentation.",
       apiResponse: {
         timestamp: new Date().toISOString(),
         model,
@@ -414,35 +424,40 @@ async function generateContentVariations(
   apiKey: string,
   model: string
 ): Promise<{
-  variations: Array<{ title: string; description: string; keywords: string[]; altText: string }>;
+  variations: Array<{
+    title: string;
+    description: string;
+    keywords: string[];
+    altText: string;
+  }>;
   apiResponse: any;
 }> {
   try {
     const prompt = `Create ${quantity} unique variations of the following Pinterest pin content. Each variation should have the SAME MEANING but use DIFFERENT words, phrases, and structure to make them unique.
 
-Base Content:
-- Title: ${baseTitle}
-- Description: ${baseDescription}
-- Keywords: ${baseKeywords}
-- Alt Text: ${baseAltText}
+      Base Content:
+      - Title: ${baseTitle}
+      - Description: ${baseDescription}
+      - Keywords: ${baseKeywords}
+      - Alt Text: ${baseAltText}
 
-Requirements for each variation:
-- Title: Same meaning as "${baseTitle}" but with different wording (30-70 characters)
-- Description: Same meaning as "${baseDescription}" but rephrased with different words and structure (150-250 characters). Include a call to action.
-- Keywords: Include ALL base keywords plus 2-3 NEW related keywords (8-10 total keywords)
-- Alt Text: Same meaning as "${baseAltText}" but rephrased differently (max 125 characters)
+      Requirements for each variation:
+      - Title: Same meaning as "${baseTitle}" but with different wording (30-70 characters)
+      - Description: Same meaning as "${baseDescription}" but rephrased with different words and structure (150-250 characters). Include a call to action.
+      - Keywords: Include ALL base keywords plus 2-3 NEW related keywords (8-10 total keywords)
+      - Alt Text: Same meaning as "${baseAltText}" but rephrased differently (max 125 characters)
 
-IMPORTANT: Make each variation DISTINCTLY DIFFERENT in wording while preserving the core meaning.
+      IMPORTANT: Make each variation DISTINCTLY DIFFERENT in wording while preserving the core meaning.
 
-Return ONLY a valid JSON array with this exact format:
-[
-  {
-    "title": "Your unique title here",
-    "description": "Your unique description here with call to action.",
-    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6", "keyword7", "keyword8"],
-    "altText": "Your unique alt text here"
-  }
-]`;
+      Return ONLY a valid JSON array with this exact format:
+      [
+        {
+          "title": "Your unique title here",
+          "description": "Your unique description here with call to action.",
+          "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6", "keyword7", "keyword8"],
+          "altText": "Your unique alt text here"
+        }
+      ]`;
 
     // Determine API endpoint based on model
     const endpoint = model.includes("deepseek")
@@ -516,24 +531,24 @@ async function generateKeywords(
   apiResponse: any;
 }> {
   try {
-    const prompt = `Based on the following image description and keywords, generate 5 Pinterest pin variations.
+    const prompt = `Based on the following image description and keywords, generate 15-20 Pinterest pin variations.
 
-Image Description: ${imageDescription}
-Base Keywords: ${baseKeywords}
+      Image Description: ${imageDescription}
+      Base Keywords: ${baseKeywords}
 
-For each variation, create:
-- A compelling title (30-70 characters)
-- An engaging description (150-250 characters) with a call to action
-- 5-8 relevant keywords
+      For each variation, create:
+      - A compelling title (30-70 characters)
+      - An engaging description (150-250 characters) with a call to action
+      - 15-20 relevant keywords
 
-Return ONLY a valid JSON array with this exact format:
-[
-  {
-    "title": "Your Title Here",
-    "description": "Your description here with call to action.",
-    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
-  }
-]`;
+      Return ONLY a valid JSON array with this exact format:
+      [
+        {
+          "title": "Your Title Here",
+          "description": "Your description here with call to action.",
+          "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+        }
+      ]`;
 
     // Determine API endpoint based on model
     const endpoint = model.includes("deepseek")
@@ -579,7 +594,10 @@ Return ONLY a valid JSON array with this exact format:
         timestamp: new Date().toISOString(),
         model,
         endpoint,
-        request: { baseKeywords, imageDescription: imageDescription.substring(0, 100) + "..." },
+        request: {
+          baseKeywords,
+          imageDescription: imageDescription.substring(0, 100) + "...",
+        },
         response: response.data,
       },
     };
@@ -602,7 +620,92 @@ async function generateImageBatch(
   quantity: number
 ): Promise<{ imageUrls: string[]; apiResponse: any }> {
   try {
-    const prompt = `Create a Pinterest-style image for: ${title}. ${description}`;
+    const prompt = `Title: ${title}
+      Description: ${description}
+
+      Create a single, unified vertical Pinterest-optimized image (${width}x${height}px minimum aspect ratio) consisting of precisely TWO continuous vertical panels stacked top to bottom with an artistic text banner positioned between them.
+
+      TOP PANEL ONLY - Single Zoomed-In Close-Up Image
+      One image only in this section. No multiple shots, no ingredient photos, no preparation phases.
+
+      Display the finished cooked recipe as a single, intimate, mouth-watering close-up shot. Zoom in tightly on the plated dish at a 45-degree or overhead angle, showcasing premium food porn aesthetics—glistening sauces, fresh garnishes, steam wisps if applicable, perfect food styling with precise garnish placement, crispy textures, glossy finishes, and vibrant colors. Capture intricate details that make the food appear irresistibly delicious. Focus should be crisp on the food with intentional depth of field for visual hierarchy. This is a singular, tight crop of the finished plated dish only.
+
+      MIDDLE SECTION - Artistic Text Banner (NO IMAGE CONTENT)
+      Include a visually striking, artistic text overlay banner positioned centrally between the two panels with an attractive, unconventional shape (such as organic curved ribbons, geometric angular cuts, hexagonal frames, or flowing wave designs with subtle gradients). The banner should feature modern, trendy typography with high contrast and readability, consistent with 2024-2025 trending Pinterest brand aesthetics.
+
+      Incorporate sophisticated color palettes like burnt sienna with gold accents, sage green with cream, charcoal with rose gold, or deep burgundy with champagne, chosen to complement the recipe's visual identity. Apply subtle textures (matte, satin, or metallic finishes) to the banner for dimensional appeal.
+
+      Recipe title only (no hashtags). The text should feel premium, artistic, and distinctive.
+
+      BOTTOM PANEL ONLY - Single Contextual Presentation Image
+      One image only in this section. No multiple shots, no additional plating angles, no ingredient spreads.
+
+      Display the finished cooked recipe styled in high-end food photography style as a single, complete scene. Show the finished dish on a rustic or natural surface (wooden table, marble countertop, ceramic plate, bowl, or serving vessel) with warm, soft, professional lighting. Include the plate or bowl as a key styling element. Incorporate subtle props consistent with seasonality and aesthetic: linen napkins, vintage utensils, fresh herbs, small bowls of condiments, or thematic elements (dried leaves, pine cones for fall; fresh flowers for spring). Create an inviting, cozy, premium atmosphere. This is a wide, contextual shot that tells the complete story of the finished dish in one beautifully styled frame. Include natural shadows and light play for depth and dimension.
+
+      Styling & Atmosphere (Unified Across Both Panels)
+      Food styling should exhibit professional food porn presentation: crispy textures, glossy surfaces, perfect plating angles, and chef-level garnishing
+
+      Warm, soft, golden-hour lighting dominates both panels for cohesive visual warmth
+
+      Rustic, natural, or modern minimalist surfaces depending on the recipe's vibe
+
+      Create an inviting, cozy, premium atmosphere suitable for any season or meal occasion
+
+      Ensure lived-in imperfections and realistic details for authentic appeal
+
+      Include realistic textures, vibrant colors, and natural kitchen or seasonal details like rustic cutting boards, wooden counters, and seasonal décor
+
+      Variation & Uniqueness Safeguards
+      CRITICAL: Ensure the image is highly distinctive and visually unique each generation. Implement the following:
+
+      Vary camera angles between top and bottom (tight macro/45-degree on top, wider overhead or side angle on bottom)
+
+      Rotate seasonal styling elements and prop arrangements each time
+
+      Alternate between different plating styles, serving vessels, and presentation contexts
+
+      Vary lighting conditions subtly (golden hour, soft diffused light, candlelit ambiance, natural window light)
+
+      Change background textures and surfaces (wooden, marble, linen, ceramic, slate)
+
+      Randomize artistic banner shapes and design styles (ribbons, geometric frames, organic curves, minimalist lines)
+
+      Include different garnish techniques and flavor-complementary elements
+
+      Vary color grading and tone warmth across generations
+
+      Never regenerate resembling images—ensure high visual distinctiveness each time
+
+      Absolute Technical Requirements
+      Vertical Pinterest format only (${width}x${height}px minimum)
+
+      EXACTLY TWO IMAGES STACKED VERTICALLY - TOP AND BOTTOM ONLY
+
+      NO carousel layouts, NO grid layouts, NO multiple recipe variations
+
+      NO additional panels, NO ingredient photos, NO preparation images
+
+      NO clutter, NO branding, NO hands, NO faces, NO on-image logos or icons
+
+      Text limited to title only on the banner (no hashtags, no additional text)
+
+      Professional food photography quality throughout
+
+      Crisp focus on food with intentional depth of field for visual hierarchy
+
+      Free of watermarks or extraneous elements
+
+      Optimized for high engagement and saved-pin visibility
+
+      Color Palette & Typography Guidance
+      Text color palette: Warm hues (burnt orange, terracotta, sage green, charcoal, deep burgundy) with metallic accents (gold, rose gold, champagne) for contrast and premium feel
+
+      Typography: Modern, trendy, readable—sans-serif or elegant serif fonts with slight artistic flair
+
+      Ensure text pops crisply against the artistic banner background
+
+      Summary
+      Generate a single vertical image containing only: [TOP PANEL: zoomed close-up of finished dish] + [CENTERED BANNER WITH RECIPE TITLE] + [BOTTOM PANEL: contextual full-scene presentation]. No other images. No variations. No additional content.`;
 
     // Use fal.ai API
     if (model.includes("fal")) {
@@ -699,20 +802,22 @@ async function generateImageBatch(
 async function generateAltText(
   imageUrl: string,
   title: string,
+  description: string,
   apiKey: string,
   model: string
 ): Promise<{ altText: string; apiResponse: any }> {
   try {
     const prompt = `Generate a concise, descriptive alt text for this image for accessibility purposes.
-The alt text should:
-- Be maximum 125 characters
-- Describe the key visual elements
-- Be suitable for screen readers
-- Focus on what's visible in the image
+      The alt text should:
+      - Be maximum 125 characters
+      - Describe the key visual elements
+      - Be suitable for screen readers
+      - Focus on what's visible in the image
 
-Image title: ${title}
+      Image title: ${title}
+      Image description: ${description}
 
-Return ONLY the alt text, nothing else.`;
+      Return ONLY the alt text, nothing else.`;
 
     const requestData = {
       model,

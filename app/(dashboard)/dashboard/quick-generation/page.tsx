@@ -37,10 +37,12 @@ const MODEL_PRESETS = {
 };
 
 const DIMENSION_PRESETS = [
-  { name: 'Pinterest Pin', width: 1000, height: 1500 },
-  { name: 'Instagram Story', width: 1080, height: 1920 },
-  { name: 'Instagram Post', width: 1080, height: 1080 },
-  { name: 'Facebook Post', width: 1200, height: 630 },
+  { name: '9 x 16 in', width: 1000, height: 1500 },
+  { name: 'Square', width: 1080, height: 1080 },
+  { name: 'Compact', width: 300, height: 420 },
+  { name: 'Landscape', width: 1050, height: 600 },
+  { name: 'Mini Portrait', width: 300, height: 450 },
+  { name: 'High Res', width: 3757, height: 2775 },
 ];
 
 export default function QuickGenerationPage() {
@@ -445,9 +447,10 @@ export default function QuickGenerationPage() {
                     value={formData.imageWidth}
                     onChange={(e) => setFormData({ ...formData, imageWidth: parseInt(e.target.value) })}
                     min="100"
-                    max="4000"
+                    max="5000"
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
+                  <p className="text-xs text-gray-500 mt-1">≈ {(formData.imageWidth / 100).toFixed(2)} in</p>
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Height (px)</label>
@@ -456,9 +459,10 @@ export default function QuickGenerationPage() {
                     value={formData.imageHeight}
                     onChange={(e) => setFormData({ ...formData, imageHeight: parseInt(e.target.value) })}
                     min="100"
-                    max="4000"
+                    max="5000"
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
+                  <p className="text-xs text-gray-500 mt-1">≈ {(formData.imageHeight / 100).toFixed(2)} in</p>
                 </div>
               </div>
             </div>

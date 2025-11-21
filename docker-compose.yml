@@ -60,7 +60,7 @@ services:
     volumes:
       - ./public/uploads:/app/public/uploads
       - ./public/generated:/app/public/generated
-    command: sh -c "npx prisma migrate deploy && node server.js"
+    # Command already set in Dockerfile CMD
     networks:
       - app-network
 

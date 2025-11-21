@@ -5,10 +5,42 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 
+// Model presets for different API types
+const MODEL_PRESETS = {
+  seedream: [
+    'seedream-4-0-250828',
+    'seedream-3-5-250815',
+    'seedream-3-0-250801',
+  ],
+  fal: [
+    'fal-ai/flux-pro/v1.1',
+    'fal-ai/flux/dev',
+    'fal-ai/flux/schnell',
+    'fal-ai/flux-pro/v1.1-ultra',
+    'fal-ai/imagen4/preview',
+    'fal-ai/recraft/v3/text-to-image',
+    'fal-ai/hidream-i1-full',
+    'fal-ai/qwen-image',
+  ],
+  openai: [
+    'gpt-4o',
+    'gpt-4o-mini',
+    'gpt-4-turbo',
+    'gpt-4-vision-preview',
+    'gpt-3.5-turbo',
+  ],
+  deepseek: [
+    'deepseek-chat',
+    'deepseek-coder',
+  ],
+};
+
 interface ApiKey {
   id: string;
   name: string;
   type: string;
+  usageType: string;
+  modelName?: string | null;
 }
 
 interface Row {
@@ -16,6 +48,9 @@ interface Row {
   keywords: string;
   imageUrl: string;
   quantity: number;
+  title: string;
+  description: string;
+  altText: string;
 }
 
 export default function BulkGenerationPage() {
@@ -32,12 +67,46 @@ export default function BulkGenerationPage() {
   const [imageWidth, setImageWidth] = useState(1000);
   const [imageHeight, setImageHeight] = useState(1500);
   const [rows, setRows] = useState<Row[]>([
-    { id: '1', keywords: '', imageUrl: '', quantity: 1 },
+    { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '' },
   ]);
 
   useEffect(() => {
     fetchApiKeys();
   }, []);
+
+  // Auto-set default model when image generation API key changes
+  useEffect(() => {
+    if (imageGenApiKeyId) {
+      const selectedKey = apiKeys.find((k) => k.id === imageGenApiKeyId);
+      if (selectedKey) {
+        // Use API key's default model or the first preset for its type
+        const defaultModel = selectedKey.modelName || MODEL_PRESETS[selectedKey.type as keyof typeof MODEL_PRESETS]?.[0] || '';
+        setImageGenModel(defaultModel);
+      }
+    }
+  }, [imageGenApiKeyId, apiKeys]);
+
+  // Auto-set default model when keyword search API key changes
+  useEffect(() => {
+    if (keywordSearchApiKeyId) {
+      const selectedKey = apiKeys.find((k) => k.id === keywordSearchApiKeyId);
+      if (selectedKey) {
+        const defaultModel = selectedKey.modelName || MODEL_PRESETS[selectedKey.type as keyof typeof MODEL_PRESETS]?.[0] || '';
+        setKeywordSearchModel(defaultModel);
+      }
+    }
+  }, [keywordSearchApiKeyId, apiKeys]);
+
+  // Auto-set default model when image description API key changes
+  useEffect(() => {
+    if (imageDescApiKeyId) {
+      const selectedKey = apiKeys.find((k) => k.id === imageDescApiKeyId);
+      if (selectedKey) {
+        const defaultModel = selectedKey.modelName || MODEL_PRESETS[selectedKey.type as keyof typeof MODEL_PRESETS]?.[0] || '';
+        setImageDescModel(defaultModel);
+      }
+    }
+  }, [imageDescApiKeyId, apiKeys]);
 
   const fetchApiKeys = async () => {
     try {
@@ -48,10 +117,17 @@ export default function BulkGenerationPage() {
 
         // Auto-select first key of each type
         const falKey = data.find((k: ApiKey) => k.type === 'fal');
+        const seedreamKey = data.find((k: ApiKey) => k.type === 'seedream');
         const openaiKey = data.find((k: ApiKey) => k.type === 'openai');
         const deepseekKey = data.find((k: ApiKey) => k.type === 'deepseek');
 
-        if (falKey) setImageGenApiKeyId(falKey.id);
+        // Prefer fal over seedream, but use seedream if fal is not available
+        if (falKey) {
+          setImageGenApiKeyId(falKey.id);
+        } else if (seedreamKey) {
+          setImageGenApiKeyId(seedreamKey.id);
+        }
+
         if (openaiKey) {
           setKeywordSearchApiKeyId(openaiKey.id);
           setImageDescApiKeyId(openaiKey.id);
@@ -68,7 +144,7 @@ export default function BulkGenerationPage() {
   const addRow = () => {
     setRows([
       ...rows,
-      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1 },
+      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '' },
     ]);
   };
 
@@ -126,6 +202,9 @@ export default function BulkGenerationPage() {
             keywords: row.keywords,
             imageUrl: row.imageUrl,
             quantity: parseInt(row.quantity.toString(), 10),
+            title: row.title.trim() || null,
+            description: row.description.trim() || null,
+            altText: row.altText.trim() || null,
           })),
         }),
       });
@@ -145,10 +224,18 @@ export default function BulkGenerationPage() {
     }
   };
 
-  const falKeys = apiKeys.filter((k) => k.type === 'fal');
+  // Filter API keys by type AND usageType
+  const falKeys = apiKeys.filter((k) => k.type === 'fal' && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
+  const seedreamKeys = apiKeys.filter((k) => k.type === 'seedream' && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
   const openaiKeys = apiKeys.filter((k) => k.type === 'openai');
   const deepseekKeys = apiKeys.filter((k) => k.type === 'deepseek');
-  const llmKeys = [...openaiKeys, ...deepseekKeys]; // Combined LLM keys for keyword search and image description
+
+  // Combined image generation keys
+  const imageGenKeys = [...falKeys, ...seedreamKeys];
+
+  // LLM keys filtered by usage type
+  const keywordSearchKeys = [...openaiKeys, ...deepseekKeys].filter((k) => k.usageType === 'keywordSearch' || k.usageType === 'all');
+  const imageDescKeys = [...openaiKeys, ...deepseekKeys].filter((k) => k.usageType === 'imageDescription' || k.usageType === 'all');
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-8">
@@ -188,9 +275,9 @@ export default function BulkGenerationPage() {
               required
             >
               <option value="">Select API Key</option>
-              {falKeys.map((key) => (
+              {imageGenKeys.map((key) => (
                 <option key={key.id} value={key.id}>
-                  {key.name}
+                  {key.name} ({key.type})
                 </option>
               ))}
             </select>
@@ -207,7 +294,7 @@ export default function BulkGenerationPage() {
               required
             >
               <option value="">Select API Key</option>
-              {llmKeys.map((key) => (
+              {keywordSearchKeys.map((key) => (
                 <option key={key.id} value={key.id}>
                   {key.name} ({key.type})
                 </option>
@@ -226,7 +313,7 @@ export default function BulkGenerationPage() {
               required
             >
               <option value="">Select API Key</option>
-              {llmKeys.map((key) => (
+              {imageDescKeys.map((key) => (
                 <option key={key.id} value={key.id}>
                   {key.name} ({key.type})
                 </option>
@@ -250,27 +337,24 @@ export default function BulkGenerationPage() {
               placeholder="e.g., fal-ai/flux-pro/v1.1"
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => setImageGenModel('fal-ai/flux-pro/v1.1')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                flux-pro/v1.1
-              </button>
-              <button
-                type="button"
-                onClick={() => setImageGenModel('fal-ai/flux/dev')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                flux/dev
-              </button>
-              <button
-                type="button"
-                onClick={() => setImageGenModel('fal-ai/flux/schnell')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                flux/schnell
-              </button>
+              {imageGenApiKeyId && (() => {
+                const selectedKey = apiKeys.find((k) => k.id === imageGenApiKeyId);
+                const keyType = selectedKey?.type as keyof typeof MODEL_PRESETS;
+                const models = keyType ? MODEL_PRESETS[keyType] || [] : [];
+                return models.slice(0, 5).map((model) => (
+                  <button
+                    key={model}
+                    type="button"
+                    onClick={() => setImageGenModel(model)}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    {model.replace('fal-ai/', '').replace('seedream-', 'SD-')}
+                  </button>
+                ));
+              })()}
+              {!imageGenApiKeyId && (
+                <p className="text-xs text-gray-500">Select an API key to see model suggestions</p>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
@@ -288,27 +372,24 @@ export default function BulkGenerationPage() {
               placeholder="e.g., gpt-4o"
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => setKeywordSearchModel('gpt-4o-mini')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                gpt-4o-mini
-              </button>
-              <button
-                type="button"
-                onClick={() => setKeywordSearchModel('gpt-4o')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                gpt-4o
-              </button>
-              <button
-                type="button"
-                onClick={() => setKeywordSearchModel('deepseek-chat')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                deepseek-chat
-              </button>
+              {keywordSearchApiKeyId && (() => {
+                const selectedKey = apiKeys.find((k) => k.id === keywordSearchApiKeyId);
+                const keyType = selectedKey?.type as keyof typeof MODEL_PRESETS;
+                const models = keyType ? MODEL_PRESETS[keyType] || [] : [];
+                return models.slice(0, 5).map((model) => (
+                  <button
+                    key={model}
+                    type="button"
+                    onClick={() => setKeywordSearchModel(model)}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    {model}
+                  </button>
+                ));
+              })()}
+              {!keywordSearchApiKeyId && (
+                <p className="text-xs text-gray-500">Select an API key to see model suggestions</p>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
@@ -326,20 +407,24 @@ export default function BulkGenerationPage() {
               placeholder="e.g., gpt-4o"
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => setImageDescModel('gpt-4o-mini')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                gpt-4o-mini
-              </button>
-              <button
-                type="button"
-                onClick={() => setImageDescModel('gpt-4o')}
-                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                gpt-4o
-              </button>
+              {imageDescApiKeyId && (() => {
+                const selectedKey = apiKeys.find((k) => k.id === imageDescApiKeyId);
+                const keyType = selectedKey?.type as keyof typeof MODEL_PRESETS;
+                const models = keyType ? MODEL_PRESETS[keyType] || [] : [];
+                return models.slice(0, 5).map((model) => (
+                  <button
+                    key={model}
+                    type="button"
+                    onClick={() => setImageDescModel(model)}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    {model}
+                  </button>
+                ));
+              })()}
+              {!imageDescApiKeyId && (
+                <p className="text-xs text-gray-500">Select an API key to see model suggestions</p>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">Leave empty to use API key default</p>
           </div>
@@ -355,8 +440,9 @@ export default function BulkGenerationPage() {
               onChange={(e) => setImageWidth(parseInt(e.target.value, 10))}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               min="100"
-              max="2000"
+              max="5000"
             />
+            <p className="text-xs text-gray-500 mt-1">≈ {(imageWidth / 100).toFixed(2)} inches @ 100 DPI</p>
           </div>
 
           <div>
@@ -367,8 +453,77 @@ export default function BulkGenerationPage() {
               onChange={(e) => setImageHeight(parseInt(e.target.value, 10))}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm md:text-base"
               min="100"
-              max="3000"
+              max="5000"
             />
+            <p className="text-xs text-gray-500 mt-1">≈ {(imageHeight / 100).toFixed(2)} inches @ 100 DPI</p>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 -mt-2">Size ratio: {(imageWidth / 100).toFixed(1)} x {(imageHeight / 100).toFixed(1)} inches</p>
+
+        {/* Size Suggestions */}
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-2">Quick Size Presets</label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(1000);
+                setImageHeight(1500);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              9 x 16 in (1000x1500px)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(1080);
+                setImageHeight(1080);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              1080 x 1080 px
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(300);
+                setImageHeight(420);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              300 x 420 px
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(1050);
+                setImageHeight(600);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              1050 x 600 px
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(300);
+                setImageHeight(450);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              300 x 450 px
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImageWidth(3757);
+                setImageHeight(2775);
+              }}
+              className="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              3757 x 2775 px
+            </button>
           </div>
         </div>
 
@@ -395,6 +550,9 @@ export default function BulkGenerationPage() {
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Keywords</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Image URL</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Quantity</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Title</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Description</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Alt Text</th>
                   <th className="px-2 md:px-4 py-3 text-center text-xs md:text-sm font-medium text-gray-900">Actions</th>
                 </tr>
               </thead>
@@ -433,6 +591,39 @@ export default function BulkGenerationPage() {
                         className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         min="1"
                         max="100"
+                      />
+                    </td>
+                    <td className="px-2 md:px-4 py-3">
+                      <input
+                        type="text"
+                        value={row.title}
+                        onChange={(e) =>
+                          updateRow(row.id, 'title', e.target.value)
+                        }
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
+                        placeholder="Pin title"
+                      />
+                    </td>
+                    <td className="px-2 md:px-4 py-3">
+                      <input
+                        type="text"
+                        value={row.description}
+                        onChange={(e) =>
+                          updateRow(row.id, 'description', e.target.value)
+                        }
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
+                        placeholder="Pin description"
+                      />
+                    </td>
+                    <td className="px-2 md:px-4 py-3">
+                      <input
+                        type="text"
+                        value={row.altText}
+                        onChange={(e) =>
+                          updateRow(row.id, 'altText', e.target.value)
+                        }
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
+                        placeholder="Alt text"
                       />
                     </td>
                     <td className="px-2 md:px-4 py-3 text-center">

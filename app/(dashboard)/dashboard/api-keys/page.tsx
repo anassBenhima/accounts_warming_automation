@@ -9,6 +9,7 @@ interface ApiKey {
   id: string;
   name: string;
   type: string;
+  usageType: string;
   modelName: string | null;
   isActive: boolean;
   createdAt: string;
@@ -44,6 +45,7 @@ export default function ApiKeysPage() {
   const [formData, setFormData] = useState({
     name: '',
     type: 'seedream',
+    usageType: 'all',
     apiKey: '',
     modelName: '',
   });
@@ -99,7 +101,7 @@ export default function ApiKeysPage() {
       if (response.ok) {
         setShowModal(false);
         setEditingId(null);
-        setFormData({ name: '', type: 'seedream', apiKey: '', modelName: '' });
+        setFormData({ name: '', type: 'seedream', usageType: 'all', apiKey: '', modelName: '' });
         fetchApiKeys();
       }
     } catch (error) {
@@ -116,6 +118,7 @@ export default function ApiKeysPage() {
       setFormData({
         name: data.name,
         type: data.type,
+        usageType: data.usageType || 'all',
         apiKey: data.key || '',
         modelName: data.modelName || '',
       });
@@ -233,6 +236,36 @@ export default function ApiKeysPage() {
     }
   };
 
+  const getUsageTypeColor = (usageType: string) => {
+    switch (usageType) {
+      case 'imageGeneration':
+        return 'bg-pink-100 text-pink-800';
+      case 'keywordSearch':
+        return 'bg-cyan-100 text-cyan-800';
+      case 'imageDescription':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'all':
+        return 'bg-indigo-100 text-indigo-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getUsageTypeLabel = (usageType: string) => {
+    switch (usageType) {
+      case 'imageGeneration':
+        return 'Image Gen';
+      case 'keywordSearch':
+        return 'Keyword Search';
+      case 'imageDescription':
+        return 'Image Desc';
+      case 'all':
+        return 'All Uses';
+      default:
+        return usageType;
+    }
+  };
+
   const getModelPlaceholder = (type: string) => {
     switch (type) {
       case 'seedream':
@@ -292,7 +325,7 @@ export default function ApiKeysPage() {
         <button
           onClick={() => {
             setEditingId(null);
-            setFormData({ name: '', type: 'seedream', apiKey: '', modelName: '' });
+            setFormData({ name: '', type: 'seedream', usageType: 'all', apiKey: '', modelName: '' });
             setShowModal(true);
           }}
           className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg text-sm md:text-base w-full md:w-auto"
@@ -325,6 +358,13 @@ export default function ApiKeysPage() {
                       )}`}
                     >
                       {key.type}
+                    </span>
+                    <span
+                      className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getUsageTypeColor(
+                        key.usageType
+                      )}`}
+                    >
+                      {getUsageTypeLabel(key.usageType)}
                     </span>
                     <button
                       onClick={() => toggleActive(key.id, key.isActive)}
@@ -452,6 +492,27 @@ export default function ApiKeysPage() {
                   <option value="openai">OpenAI (Keyword Search)</option>
                   <option value="deepseek">Deepseek (Keyword Search)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Usage Type
+                </label>
+                <select
+                  value={formData.usageType}
+                  onChange={(e) =>
+                    setFormData({ ...formData, usageType: e.target.value })
+                  }
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900"
+                >
+                  <option value="all">All Uses (Can be used anywhere)</option>
+                  <option value="imageGeneration">Image Generation Only</option>
+                  <option value="keywordSearch">Keyword Search Only</option>
+                  <option value="imageDescription">Image Description Only</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Restricts where this API key can be used in the application
+                </p>
               </div>
 
               <div>

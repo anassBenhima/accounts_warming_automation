@@ -380,7 +380,7 @@ export default function NewGenerationPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Image Dimensions
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, imageWidth: 1000, imageHeight: 1500 })}
@@ -390,22 +390,9 @@ export default function NewGenerationPage() {
                       : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
                   }`}
                 >
-                  Pinterest Pin
+                  9 x 16 in
                   <br />
                   <span className="text-xs opacity-75">1000×1500</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, imageWidth: 1080, imageHeight: 1920 })}
-                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    formData.imageWidth === 1080 && formData.imageHeight === 1920
-                      ? 'bg-purple-600 text-white border-purple-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
-                  }`}
-                >
-                  Instagram Story
-                  <br />
-                  <span className="text-xs opacity-75">1080×1920</span>
                 </button>
                 <button
                   type="button"
@@ -416,22 +403,61 @@ export default function NewGenerationPage() {
                       : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
                   }`}
                 >
-                  Instagram Post
+                  Square
                   <br />
                   <span className="text-xs opacity-75">1080×1080</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, imageWidth: 1200, imageHeight: 630 })}
+                  onClick={() => setFormData({ ...formData, imageWidth: 300, imageHeight: 420 })}
                   className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    formData.imageWidth === 1200 && formData.imageHeight === 630
+                    formData.imageWidth === 300 && formData.imageHeight === 420
                       ? 'bg-purple-600 text-white border-purple-600'
                       : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
                   }`}
                 >
-                  Facebook Post
+                  Compact
                   <br />
-                  <span className="text-xs opacity-75">1200×630</span>
+                  <span className="text-xs opacity-75">300×420</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, imageWidth: 1050, imageHeight: 600 })}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    formData.imageWidth === 1050 && formData.imageHeight === 600
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
+                  }`}
+                >
+                  Landscape
+                  <br />
+                  <span className="text-xs opacity-75">1050×600</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, imageWidth: 300, imageHeight: 450 })}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    formData.imageWidth === 300 && formData.imageHeight === 450
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
+                  }`}
+                >
+                  Mini Portrait
+                  <br />
+                  <span className="text-xs opacity-75">300×450</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, imageWidth: 3757, imageHeight: 2775 })}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    formData.imageWidth === 3757 && formData.imageHeight === 2775
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500'
+                  }`}
+                >
+                  High Res
+                  <br />
+                  <span className="text-xs opacity-75">3757×2775</span>
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -444,9 +470,10 @@ export default function NewGenerationPage() {
                       setFormData({ ...formData, imageWidth: parseInt(e.target.value) })
                     }
                     min="100"
-                    max="4000"
+                    max="5000"
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
                   />
+                  <p className="text-xs text-gray-500 mt-1">≈ {(formData.imageWidth / 100).toFixed(2)} in</p>
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Height (px)</label>
@@ -457,9 +484,10 @@ export default function NewGenerationPage() {
                       setFormData({ ...formData, imageHeight: parseInt(e.target.value) })
                     }
                     min="100"
-                    max="4000"
+                    max="5000"
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
                   />
+                  <p className="text-xs text-gray-500 mt-1">≈ {(formData.imageHeight / 100).toFixed(2)} in</p>
                 </div>
               </div>
             </div>

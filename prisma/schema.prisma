@@ -43,6 +43,7 @@ model ApiKey {
   userId      String
   name        String   // Alias name
   type        String   // "seedream", "openai", "deepseek", "fal"
+  usageType   String   @default("all") // "imageGeneration", "keywordSearch", "imageDescription", "all"
   apiKey      String
   modelName   String?  // For specific model names
   isActive    Boolean  @default(true)
@@ -56,6 +57,7 @@ model ApiKey {
   bulkGenImageDesc              BulkGeneration[]    @relation("BulkGenImageDescApiKey")
 
   @@index([type])
+  @@index([usageType])
   @@index([userId])
 }
 

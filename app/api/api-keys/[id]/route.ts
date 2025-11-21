@@ -35,6 +35,7 @@ export async function GET(
       id: apiKey.id,
       name: apiKey.name,
       type: apiKey.type,
+      usageType: apiKey.usageType,
       key: apiKey.apiKey, // Include the actual API key value
       modelName: apiKey.modelName,
       isActive: apiKey.isActive,
@@ -64,7 +65,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, type, apiKey, modelName, isActive } = body;
+    const { name, type, usageType, apiKey, modelName, isActive } = body;
     const logger = createUserLogger(session.user.id);
 
     // Verify ownership before update
@@ -91,7 +92,7 @@ export async function PUT(
         action: 'update',
         message: 'Updating API key',
         resourceId: id,
-        input: { name, type, modelName, isActive },
+        input: { name, type, usageType, modelName, isActive },
       },
       async () => {
         return await prisma.apiKey.update({
@@ -99,6 +100,7 @@ export async function PUT(
           data: {
             ...(name && { name }),
             ...(type && { type }),
+            ...(usageType !== undefined && { usageType }),
             ...(apiKey && { apiKey }),
             ...(modelName !== undefined && { modelName }),
             ...(isActive !== undefined && { isActive }),
