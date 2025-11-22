@@ -60,8 +60,9 @@ export async function GET(
       return NextResponse.json({ error: 'Bulk generation not found' }, { status: 404 });
     }
 
-    // Verify ownership
-    if (bulkGeneration.userId !== session.user.id) {
+    // Verify ownership (admins can access any bulk generation)
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin && bulkGeneration.userId !== session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -98,7 +99,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Bulk generation not found' }, { status: 404 });
     }
 
-    if (bulkGeneration.userId !== session.user.id) {
+    // Verify ownership (admins can delete any bulk generation)
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin && bulkGeneration.userId !== session.user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

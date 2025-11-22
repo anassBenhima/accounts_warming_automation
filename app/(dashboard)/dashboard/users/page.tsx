@@ -373,7 +373,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300"
+                  className="flex-1 bg-gray-200 text-gray-900 py-2 rounded-lg hover:bg-gray-300"
                 >
                   Cancel
                 </button>

@@ -99,7 +99,7 @@ export default function BulkHistoryPage() {
               onClick={() => {
                 toast.dismiss(t.id);
               }}
-              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
             >
               Cancel
             </button>

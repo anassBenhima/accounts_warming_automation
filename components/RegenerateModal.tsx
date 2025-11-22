@@ -102,7 +102,7 @@ export default function RegenerateModal({ isOpen, onClose, onRegenerate, current
 
   if (!isOpen) return null;
 
-  const imageGenKeys = apiKeys.filter(k => k.type === 'fal-ai' || k.type === 'seedream');
+  const imageGenKeys = apiKeys.filter(k => k.type === 'fal' || k.type === 'seedream');
   const llmKeys = apiKeys.filter(k => k.type === 'openai' || k.type === 'deepseek');
 
   return (
@@ -252,7 +252,7 @@ export default function RegenerateModal({ isOpen, onClose, onRegenerate, current
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-all"
                   disabled={regenerating}
                 >
                   Cancel
