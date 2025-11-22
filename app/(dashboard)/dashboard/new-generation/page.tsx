@@ -336,7 +336,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -495,7 +495,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(2)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -565,7 +565,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(3)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -604,7 +604,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(4)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -643,7 +643,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(5)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -682,7 +682,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(6)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -768,7 +768,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(7)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>
@@ -857,7 +857,7 @@ export default function NewGenerationPage() {
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
                 onClick={() => setStep(8)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm md:text-base"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold text-gray-900 text-sm md:text-base"
               >
                 Back
               </button>

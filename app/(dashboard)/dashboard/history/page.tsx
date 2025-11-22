@@ -577,7 +577,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
               >
                 Previous
               </button>
@@ -597,7 +597,7 @@ export default function HistoryPage() {
                         className={`px-4 py-2 rounded-lg text-sm ${
                           currentPage === page
                             ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 hover:bg-gray-50'
+                            : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
                         }`}
                       >
                         {page}
@@ -613,7 +613,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
               >
                 Next
               </button>

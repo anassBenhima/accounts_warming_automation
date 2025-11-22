@@ -309,7 +309,7 @@ export default function HtmlTemplatesPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handlePreview(template)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
                 >
                   <Eye className="w-4 h-4" />
                   Preview
@@ -575,7 +575,7 @@ export default function HtmlTemplatesPage() {
                 </button>
                 <button
                   onClick={() => setShowEditor(false)}
-                  className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
                 >
                   Cancel
                 </button>
