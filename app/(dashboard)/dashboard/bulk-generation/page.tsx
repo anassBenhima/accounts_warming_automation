@@ -51,7 +51,14 @@ interface Row {
   title: string;
   description: string;
   altText: string;
+  publishDate: string;
 }
+
+// Helper function to get today's date in YYYY-MM-DD format
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
 
 export default function BulkGenerationPage() {
   const router = useRouter();
@@ -67,7 +74,7 @@ export default function BulkGenerationPage() {
   const [imageWidth, setImageWidth] = useState(1000);
   const [imageHeight, setImageHeight] = useState(1500);
   const [rows, setRows] = useState<Row[]>([
-    { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '' },
+    { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate() },
   ]);
 
   useEffect(() => {
@@ -144,7 +151,7 @@ export default function BulkGenerationPage() {
   const addRow = () => {
     setRows([
       ...rows,
-      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '' },
+      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate() },
     ]);
   };
 
@@ -545,6 +552,7 @@ export default function BulkGenerationPage() {
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Title</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Description</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Alt Text</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Publish Date</th>
                   <th className="px-2 md:px-4 py-3 text-center text-xs md:text-sm font-medium text-gray-900">Actions</th>
                 </tr>
               </thead>
@@ -616,6 +624,16 @@ export default function BulkGenerationPage() {
                         rows={3}
                         className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         placeholder="Alt text"
+                      />
+                    </td>
+                    <td className="px-2 md:px-4 py-3">
+                      <input
+                        type="date"
+                        value={row.publishDate}
+                        onChange={(e) =>
+                          updateRow(row.id, 'publishDate', e.target.value)
+                        }
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                       />
                     </td>
                     <td className="px-2 md:px-4 py-3 text-center">
