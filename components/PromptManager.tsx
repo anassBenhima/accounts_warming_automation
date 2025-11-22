@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Check, X, Users } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -54,6 +54,7 @@ export default function PromptManager({
   });
   const [showShareModal, setShowShareModal] = useState(false);
   const [sharePrompt, setSharePrompt] = useState<Prompt | null>(null);
+  const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
@@ -144,6 +145,18 @@ export default function PromptManager({
     } catch (error) {
       console.error('Error updating prompt:', error);
     }
+  };
+
+  const toggleExpanded = (id: string) => {
+    setExpandedPrompts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   if (loading) {
@@ -241,9 +254,33 @@ export default function PromptManager({
                 </div>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {prompt.prompt}
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {expandedPrompts.has(prompt.id)
+                      ? prompt.prompt
+                      : prompt.prompt.length > 150
+                      ? `${prompt.prompt.slice(0, 150)}...`
+                      : prompt.prompt}
+                  </p>
+                  {prompt.prompt.length > 150 && (
+                    <button
+                      onClick={() => toggleExpanded(prompt.id)}
+                      className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      {expandedPrompts.has(prompt.id) ? (
+                        <>
+                          <ChevronUp className="w-4 h-4" />
+                          Show Less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4" />
+                          Show More
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
