@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Save, FolderOpen } from 'lucide-react';
 
 // Model presets for different API types
 const MODEL_PRESETS = {
@@ -76,9 +76,20 @@ export default function BulkGenerationPage() {
   const [rows, setRows] = useState<Row[]>([
     { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate() },
   ]);
+  const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLoadModal, setShowLoadModal] = useState(false);
+  const [configName, setConfigName] = useState('');
 
   useEffect(() => {
     fetchApiKeys();
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bulkGenerationConfigs');
+    if (saved) {
+      setSavedConfigs(JSON.parse(saved));
+    }
   }, []);
 
   // Auto-set default model when image generation API key changes
@@ -165,6 +176,54 @@ export default function BulkGenerationPage() {
     setRows(
       rows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
     );
+  };
+
+  const saveConfig = () => {
+    if (!configName.trim()) {
+      toast.error('Please enter a config name');
+      return;
+    }
+
+    const config = {
+      id: Date.now().toString(),
+      name: configName,
+      timestamp: new Date().toISOString(),
+      imageGenApiKeyId,
+      keywordSearchApiKeyId,
+      imageDescApiKeyId,
+      imageGenModel,
+      keywordSearchModel,
+      imageDescModel,
+      imageWidth,
+      imageHeight,
+    };
+
+    const updated = [...savedConfigs, config];
+    localStorage.setItem('bulkGenerationConfigs', JSON.stringify(updated));
+    setSavedConfigs(updated);
+    setConfigName('');
+    setShowSaveModal(false);
+    toast.success(`Config "${configName}" saved!`);
+  };
+
+  const loadConfig = (config: any) => {
+    setImageGenApiKeyId(config.imageGenApiKeyId || '');
+    setKeywordSearchApiKeyId(config.keywordSearchApiKeyId || '');
+    setImageDescApiKeyId(config.imageDescApiKeyId || '');
+    setImageGenModel(config.imageGenModel || '');
+    setKeywordSearchModel(config.keywordSearchModel || '');
+    setImageDescModel(config.imageDescModel || '');
+    setImageWidth(config.imageWidth || 1000);
+    setImageHeight(config.imageHeight || 1500);
+    setShowLoadModal(false);
+    toast.success(`Config "${config.name}" loaded!`);
+  };
+
+  const deleteConfig = (configId: string) => {
+    const updated = savedConfigs.filter(c => c.id !== configId);
+    localStorage.setItem('bulkGenerationConfigs', JSON.stringify(updated));
+    setSavedConfigs(updated);
+    toast.success('Config deleted');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -259,6 +318,26 @@ export default function BulkGenerationPage() {
             placeholder="e.g., Holiday Recipes Batch"
             required
           />
+        </div>
+
+        {/* Save/Load Config Buttons */}
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setShowSaveModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+          >
+            <Save className="w-4 h-4" />
+            Save Config
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowLoadModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          >
+            <FolderOpen className="w-4 h-4" />
+            Load Config ({savedConfigs.length})
+          </button>
         </div>
 
         {/* API Keys */}
@@ -673,6 +752,88 @@ export default function BulkGenerationPage() {
           </button>
         </div>
       </form>
+
+      {/* Save Config Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 text-gray-900">Save Configuration</h3>
+            <input
+              type="text"
+              value={configName}
+              onChange={(e) => setConfigName(e.target.value)}
+              placeholder="Enter config name..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 text-gray-900"
+              onKeyPress={(e) => e.key === 'Enter' && saveConfig()}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveConfig}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Load Config Modal */}
+      {showLoadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-gray-900">Load Configuration</h3>
+            {savedConfigs.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No saved configurations</p>
+            ) : (
+              <div className="space-y-3">
+                {savedConfigs.map((config) => (
+                  <div
+                    key={config.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">{config.name}</h4>
+                      <p className="text-sm text-gray-500">
+                        {new Date(config.timestamp).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {config.imageWidth}x{config.imageHeight}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => loadConfig(config)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Load
+                      </button>
+                      <button
+                        onClick={() => deleteConfig(config.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => setShowLoadModal(false)}
+              className="mt-4 w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
