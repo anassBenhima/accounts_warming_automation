@@ -66,15 +66,19 @@ export async function POST(request: NextRequest) {
     const logger = createUserLogger(session.user.id);
 
     const body = await request.json();
-    const { name, description, htmlContent, dynamicAreas } = body;
+    const { name, description, templateType = 'html', htmlContent, canvaDesignId, dynamicAreas } = body;
 
     // Validation
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'Template name is required' }, { status: 400 });
     }
 
-    if (!htmlContent || !htmlContent.trim()) {
-      return NextResponse.json({ error: 'HTML content is required' }, { status: 400 });
+    if (templateType === 'html' && (!htmlContent || !htmlContent.trim())) {
+      return NextResponse.json({ error: 'HTML content is required for HTML templates' }, { status: 400 });
+    }
+
+    if (templateType === 'canva' && (!canvaDesignId || !canvaDesignId.trim())) {
+      return NextResponse.json({ error: 'Canva Design ID is required for Canva templates' }, { status: 400 });
     }
 
     if (!Array.isArray(dynamicAreas)) {
@@ -87,7 +91,9 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         name: name.trim(),
         description: description?.trim() || null,
-        htmlContent: htmlContent.trim(),
+        templateType,
+        htmlContent: htmlContent?.trim() || '',
+        canvaDesignId: canvaDesignId?.trim() || null,
         dynamicAreas,
       },
       include: {

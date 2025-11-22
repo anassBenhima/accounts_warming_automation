@@ -22,26 +22,53 @@ import {
   Users,
   Zap,
   Code,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import NotificationToggle from '@/components/NotificationToggle';
 import SessionErrorHandler from '@/components/SessionErrorHandler';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Quick Generation', href: '/dashboard/quick-generation', icon: Zap },
-  { name: 'New Generation', href: '/dashboard/new-generation', icon: Play },
-  { name: 'History', href: '/dashboard/history', icon: History },
-  { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers },
-  { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive },
-  { name: 'System Logs', href: '/dashboard/logs', icon: LogsIcon },
-  { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
-  { name: 'Image to Prompt', href: '/dashboard/image-to-prompt', icon: FileText },
-  { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon },
-  { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search },
-  { name: 'Templates', href: '/dashboard/templates', icon: Palette },
-  { name: 'HTML Templates', href: '/dashboard/html-templates', icon: Code },
+const navigationGroups = [
+  {
+    name: 'Generation',
+    items: [
+      { name: 'Quick Generation', href: '/dashboard/quick-generation', icon: Zap },
+      { name: 'New Generation', href: '/dashboard/new-generation', icon: Play },
+      { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers },
+    ],
+  },
+  {
+    name: 'History',
+    items: [
+      { name: 'History', href: '/dashboard/history', icon: History },
+      { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive },
+    ],
+  },
+  {
+    name: 'Prompts',
+    items: [
+      { name: 'Image to Prompt', href: '/dashboard/image-to-prompt', icon: FileText },
+      { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon },
+      { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search },
+    ],
+  },
+  {
+    name: 'Configuration',
+    items: [
+      { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
+      { name: 'Templates', href: '/dashboard/templates', icon: Palette },
+      { name: 'HTML Templates', href: '/dashboard/html-templates', icon: Code },
+    ],
+  },
+  {
+    name: 'System',
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'System Logs', href: '/dashboard/logs', icon: LogsIcon },
+    ],
+  },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -49,6 +76,19 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showProfilePopover, setShowProfilePopover] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>(['Generation']);
+
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev =>
+      prev.includes(groupName)
+        ? prev.filter(g => g !== groupName)
+        : [groupName] // Close all other groups and open only this one
+    );
+  };
+
+  const isGroupActive = (items: { href: string }[]) => {
+    return items.some(item => pathname === item.href);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,42 +136,75 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-3 md:p-4 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
+          <nav className="flex-1 p-3 md:p-4 space-y-2 overflow-y-auto">
+            {navigationGroups.map((group) => {
+              const isOpen = openGroups.includes(group.name);
+              const hasActiveItem = isGroupActive(group.items);
 
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all text-sm md:text-base ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-                  <span className="font-medium">{item.name}</span>
-                </Link>
+                <div key={group.name} className="space-y-1">
+                  {/* Group Header */}
+                  <button
+                    onClick={() => toggleGroup(group.name)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all text-sm font-semibold ${
+                      hasActiveItem
+                        ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span>{group.name}</span>
+                    {isOpen ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {/* Group Items */}
+                  {isOpen && (
+                    <div className="ml-2 space-y-1">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+
+                        return (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all text-sm ${
+                              isActive
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4 flex-shrink-0" />
+                            <span className="font-medium">{item.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
 
             {/* Admin-only Users Module */}
             {session?.user?.role === 'ADMIN' && (
-              <Link
-                href="/dashboard/users"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all text-sm md:text-base ${
-                  pathname === '/dashboard/users'
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Users className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-                <span className="font-medium">Users</span>
-              </Link>
+              <div className="pt-2 border-t border-gray-200">
+                <Link
+                  href="/dashboard/users"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all text-sm ${
+                    pathname === '/dashboard/users'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium">Users</span>
+                </Link>
+              </div>
             )}
           </nav>
 

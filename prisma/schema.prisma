@@ -475,16 +475,19 @@ model BulkGeneratedPin {
 }
 
 model HtmlTemplate {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?  @db.Text
-  htmlContent String   @db.Text
-  dynamicAreas Json   @db.Json // Array of {type, id, label, placeholder, defaultValue}
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  description  String?  @db.Text
+  templateType String   @default("html") // "html" or "canva"
+  htmlContent  String   @db.Text
+  canvaDesignId String? // For Canva templates
+  dynamicAreas Json     @db.Json // Array of {type, id, label, placeholder, defaultValue}
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([templateType])
 }

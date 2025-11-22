@@ -166,8 +166,8 @@ export default function NewGenerationPage() {
     );
   };
 
-  const imageGenKeys = apiKeys.filter((k) => (k.type === 'seedream' || k.type === 'fal') && k.isActive);
-  const keywordKeys = apiKeys.filter((k) => (k.type === 'openai' || k.type === 'deepseek') && k.isActive);
+  const imageGenKeys = apiKeys.filter((k) => (k.type === 'seedream' || k.type === 'fal') && k.isActive && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
+  const keywordKeys = apiKeys.filter((k) => (k.type === 'openai' || k.type === 'deepseek') && k.isActive && (k.usageType === 'keywordSearch' || k.usageType === 'all'));
   const activeTemplates = templates.filter((t) => t.isActive);
 
   return (

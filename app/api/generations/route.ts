@@ -95,6 +95,8 @@ export async function POST(request: NextRequest) {
       imageGenerationPromptId,
       keywordSearchPromptId,
       templateIds,
+      imageWidth = 1000,
+      imageHeight = 1500,
     } = body;
 
     // Validate required fields
@@ -149,6 +151,8 @@ export async function POST(request: NextRequest) {
             imageToPromptId,
             imageGenerationPromptId,
             keywordSearchPromptId,
+            imageWidth,
+            imageHeight,
             status: 'PENDING',
             ...(templateIds.length > 0 && {
               generationTemplates: {

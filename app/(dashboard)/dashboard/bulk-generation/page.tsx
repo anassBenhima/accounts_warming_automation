@@ -225,17 +225,9 @@ export default function BulkGenerationPage() {
   };
 
   // Filter API keys by type AND usageType
-  const falKeys = apiKeys.filter((k) => k.type === 'fal' && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
-  const seedreamKeys = apiKeys.filter((k) => k.type === 'seedream' && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
-  const openaiKeys = apiKeys.filter((k) => k.type === 'openai');
-  const deepseekKeys = apiKeys.filter((k) => k.type === 'deepseek');
-
-  // Combined image generation keys
-  const imageGenKeys = [...falKeys, ...seedreamKeys];
-
-  // LLM keys filtered by usage type
-  const keywordSearchKeys = [...openaiKeys, ...deepseekKeys].filter((k) => k.usageType === 'keywordSearch' || k.usageType === 'all');
-  const imageDescKeys = [...openaiKeys, ...deepseekKeys].filter((k) => k.usageType === 'imageDescription' || k.usageType === 'all');
+  const imageGenKeys = apiKeys.filter((k) => (k.type === 'fal' || k.type === 'seedream') && (k.usageType === 'imageGeneration' || k.usageType === 'all'));
+  const keywordSearchKeys = apiKeys.filter((k) => (k.type === 'openai' || k.type === 'deepseek') && (k.usageType === 'keywordSearch' || k.usageType === 'all'));
+  const imageDescKeys = apiKeys.filter((k) => (k.type === 'openai' || k.type === 'deepseek') && (k.usageType === 'imageDescription' || k.usageType === 'all'));
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-8">

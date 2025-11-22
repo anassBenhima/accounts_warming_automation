@@ -11,7 +11,9 @@ interface HtmlTemplate {
   userId: string;
   name: string;
   description?: string;
+  templateType: 'html' | 'canva';
   htmlContent: string;
+  canvaDesignId?: string;
   dynamicAreas: {
     type: 'image' | 'text';
     id: string;
@@ -41,7 +43,9 @@ export default function HtmlTemplatesPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    templateType: 'html' as 'html' | 'canva',
     htmlContent: '',
+    canvaDesignId: '',
     dynamicAreas: [] as HtmlTemplate['dynamicAreas'],
   });
 
@@ -113,8 +117,13 @@ export default function HtmlTemplatesPage() {
       return;
     }
 
-    if (!formData.htmlContent.trim()) {
-      toast.error('HTML content is required');
+    if (!formData.htmlContent.trim() && formData.templateType === 'html') {
+      toast.error('HTML content is required for HTML templates');
+      return;
+    }
+
+    if (!formData.canvaDesignId?.trim() && formData.templateType === 'canva') {
+      toast.error('Canva Design ID is required for Canva templates');
       return;
     }
 
@@ -142,7 +151,9 @@ export default function HtmlTemplatesPage() {
       setFormData({
         name: '',
         description: '',
+        templateType: 'html' as 'html' | 'canva',
         htmlContent: '',
+        canvaDesignId: '',
         dynamicAreas: [],
       });
       fetchTemplates();
@@ -157,7 +168,9 @@ export default function HtmlTemplatesPage() {
     setFormData({
       name: template.name,
       description: template.description || '',
+      templateType: template.templateType,
       htmlContent: template.htmlContent,
+      canvaDesignId: template.canvaDesignId || '',
       dynamicAreas: template.dynamicAreas,
     });
     setShowEditor(true);
@@ -211,7 +224,9 @@ export default function HtmlTemplatesPage() {
             setFormData({
               name: '',
               description: '',
+              templateType: 'html' as 'html' | 'canva',
               htmlContent: '',
+              canvaDesignId: '',
               dynamicAreas: [],
             });
             setShowEditor(true);
@@ -369,19 +384,84 @@ export default function HtmlTemplatesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  HTML Content
+                  Template Type
                 </label>
-                <textarea
-                  value={formData.htmlContent}
-                  onChange={(e) => setFormData({ ...formData, htmlContent: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg font-mono text-sm"
-                  rows={12}
-                  placeholder="<div>Your HTML content here...</div>"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Use placeholders like {`{{dynamic-id}}`} in your HTML where dynamic content should appear
-                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, templateType: 'html' })}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${
+                      formData.templateType === 'html'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-semibold text-gray-900 mb-1">Copy/Paste HTML</div>
+                    <div className="text-sm text-gray-600">Write or paste HTML code directly</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, templateType: 'canva' })}
+                    className={`p-4 border-2 rounded-lg text-left transition-all ${
+                      formData.templateType === 'canva'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-semibold text-gray-900 mb-1">Canva Editor</div>
+                    <div className="text-sm text-gray-600">Use drag-and-drop Canva editor</div>
+                  </button>
+                </div>
               </div>
+
+              {formData.templateType === 'html' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    HTML Content
+                  </label>
+                  <textarea
+                    value={formData.htmlContent}
+                    onChange={(e) => setFormData({ ...formData, htmlContent: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+                    rows={12}
+                    placeholder="<div>Your HTML content here...</div>"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Use placeholders like {`{{dynamic-id}}`} in your HTML where dynamic content should appear
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Canva Design
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <Code className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Canva Integration</h3>
+                    <p className="text-gray-600 mb-4">
+                      Open Canva editor to create your design with drag-and-drop features
+                    </p>
+                    <input
+                      type="text"
+                      value={formData.canvaDesignId}
+                      onChange={(e) => setFormData({ ...formData, canvaDesignId: e.target.value })}
+                      placeholder="Enter Canva Design ID"
+                      className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg mb-4"
+                    />
+                    <button
+                      type="button"
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
+                      onClick={() => {
+                        window.open('https://www.canva.com/create/', '_blank');
+                        toast('After creating your design in Canva, paste the Design ID above');
+                      }}
+                    >
+                      <Code className="w-5 h-5" />
+                      Open Canva Editor
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <div className="flex items-center justify-between mb-4">
