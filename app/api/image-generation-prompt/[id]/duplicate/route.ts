@@ -49,11 +49,25 @@ export async function POST(
     // Duplicate for each target user
     const duplicatedPrompts = await Promise.all(
       targetUserIds.map(async (targetUserId: string) => {
+        // Check if user already has a prompt with this name
+        let finalName = originalPrompt.name;
+        let counter = 1;
+
+        while (await prisma.imageGenerationPrompt.findFirst({
+          where: {
+            userId: targetUserId,
+            name: finalName,
+          },
+        })) {
+          finalName = `${originalPrompt.name} (Copy ${counter})`;
+          counter++;
+        }
+
         // Create the prompt copy
         const newPrompt = await prisma.imageGenerationPrompt.create({
           data: {
             userId: targetUserId,
-            name: originalPrompt.name,
+            name: finalName,
             prompt: originalPrompt.prompt,
             isActive: originalPrompt.isActive,
             isShared: true, // Mark as shared when duplicated by admin

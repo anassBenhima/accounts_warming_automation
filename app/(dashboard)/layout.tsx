@@ -148,7 +148,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                     onClick={() => toggleGroup(group.name)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all text-sm font-semibold ${
                       hasActiveItem
-                        ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700'
+                        ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-gray-900'
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
