@@ -432,6 +432,7 @@ model BulkGenerationRow {
   description String?  @db.Text // Base description to generate variations from
   altText     String?  @db.Text // Base alt text to generate variations from
   quantity    Int              // Number of pins to generate for this row
+  publishDate String?          // Pinterest publish date (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
 
   // API responses for debugging
   apiResponses Json? @db.Json

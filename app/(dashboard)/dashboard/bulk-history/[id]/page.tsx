@@ -160,8 +160,9 @@ export default function BulkHistoryDetailPage() {
   const exportToCSV = () => {
     if (!bulkGeneration) return;
 
+    // CSV with column headers only (no title row)
     const csvData = [
-      ['Title', 'Description', 'Keywords', 'Image URL', 'Alt Text'],
+      ['Title', 'Description', 'Keywords', 'Image URL', 'Alt Text', 'Published date'],
     ];
 
     // Escape CSV values (handle commas and quotes)
@@ -172,6 +173,12 @@ export default function BulkHistoryDetailPage() {
       return value;
     };
 
+    // Truncate text to specified length
+    const truncate = (text: string, maxLength: number) => {
+      if (text.length <= maxLength) return text;
+      return text.slice(0, maxLength);
+    };
+
     bulkGeneration.rows.forEach((row) => {
       row.generatedPins.forEach((pin) => {
         // Use local image path if available, otherwise fall back to API URL
@@ -179,12 +186,16 @@ export default function BulkHistoryDetailPage() {
           ? `${window.location.origin}${pin.localImagePath}`
           : pin.imageUrl;
 
+        // Get publishDate from row data (Pinterest format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+        const publishDate = (row as any).publishDate || '';
+
         csvData.push([
-          escapeCSV(pin.title),
-          escapeCSV(pin.description),
+          escapeCSV(truncate(pin.title, 100)), // Title max 100 chars
+          escapeCSV(truncate(pin.description, 500)), // Description max 500 chars
           escapeCSV(pin.keywords.join(', ')),
           escapeCSV(imageUrl),
-          escapeCSV((pin as any).altText || pin.title), // Use altText or fallback to title
+          escapeCSV((pin as any).altText || pin.title),
+          escapeCSV(publishDate),
         ]);
       });
     });
