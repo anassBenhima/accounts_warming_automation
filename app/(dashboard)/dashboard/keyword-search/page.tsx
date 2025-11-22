@@ -86,6 +86,7 @@ export default function KeywordSearchPage() {
       title="Keyword Search Prompts"
       description="Manage prompts for keyword and trend research"
       apiEndpoint="/api/keyword-search-prompt"
+      promptType="keyword-search-prompt"
       presetTemplates={presetTemplates}
     />
   );

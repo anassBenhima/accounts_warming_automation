@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, Users } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
+import ShareGenerationModal from '@/components/ShareGenerationModal';
 
 interface Prompt {
   id: string;
@@ -23,6 +25,7 @@ interface Props {
   title: string;
   description: string;
   apiEndpoint: string;
+  promptType: 'image-to-prompt' | 'image-generation-prompt' | 'keyword-search-prompt';
   showLlmType?: boolean;
   presetTemplates?: PromptTemplate[];
 }
@@ -31,9 +34,11 @@ export default function PromptManager({
   title,
   description,
   apiEndpoint,
+  promptType,
   showLlmType = false,
   presetTemplates = [],
 }: Props) {
+  const { data: session } = useSession();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -47,6 +52,10 @@ export default function PromptManager({
     isOpen: false,
     id: null,
   });
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharePrompt, setSharePrompt] = useState<Prompt | null>(null);
+
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   useEffect(() => {
     fetchPrompts();
@@ -205,6 +214,18 @@ export default function PromptManager({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setSharePrompt(prompt);
+                        setShowShareModal(true);
+                      }}
+                      className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                      title="Share with team"
+                    >
+                      <Users className="w-5 h-5" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleEdit(prompt)}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
@@ -351,6 +372,20 @@ export default function PromptManager({
         confirmText="Delete"
         isDanger={true}
       />
+
+      {/* Share Prompt Modal */}
+      {sharePrompt && (
+        <ShareGenerationModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setSharePrompt(null);
+          }}
+          generationId={sharePrompt.id}
+          generationType={promptType}
+          generationName={sharePrompt.name}
+        />
+      )}
     </div>
   );
 }

@@ -54,6 +54,7 @@ export default function ImageToPromptPage() {
       title="Image to Prompt"
       description="Manage prompts for AI image description"
       apiEndpoint="/api/image-to-prompt"
+      promptType="image-to-prompt"
       showLlmType={true}
       presetTemplates={presetTemplates}
     />

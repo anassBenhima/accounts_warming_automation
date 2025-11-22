@@ -15,7 +15,7 @@ interface ShareGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
   generationId: string;
-  generationType: 'single' | 'bulk';
+  generationType: 'single' | 'bulk' | 'image-to-prompt' | 'image-generation-prompt' | 'keyword-search-prompt';
   generationName: string;
 }
 
@@ -71,9 +71,25 @@ export default function ShareGenerationModal({
 
     setLoading(true);
     try {
-      const endpoint = generationType === 'single'
-        ? `/api/generations/${generationId}/duplicate`
-        : `/api/bulk-generations/${generationId}/duplicate`;
+      let endpoint = '';
+
+      switch (generationType) {
+        case 'single':
+          endpoint = `/api/generations/${generationId}/duplicate`;
+          break;
+        case 'bulk':
+          endpoint = `/api/bulk-generations/${generationId}/duplicate`;
+          break;
+        case 'image-to-prompt':
+          endpoint = `/api/image-to-prompt/${generationId}/duplicate`;
+          break;
+        case 'image-generation-prompt':
+          endpoint = `/api/image-generation-prompt/${generationId}/duplicate`;
+          break;
+        case 'keyword-search-prompt':
+          endpoint = `/api/keyword-search-prompt/${generationId}/duplicate`;
+          break;
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',

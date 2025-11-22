@@ -78,6 +78,7 @@ export default function ImageGenerationPage() {
       title="Image Generation Prompts"
       description="Manage prompts for AI image generation"
       apiEndpoint="/api/image-generation-prompt"
+      promptType="image-generation-prompt"
       presetTemplates={presetTemplates}
     />
   );
