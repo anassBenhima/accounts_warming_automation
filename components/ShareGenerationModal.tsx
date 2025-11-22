@@ -27,6 +27,7 @@ export default function ShareGenerationModal({
   generationName,
 }: ShareGenerationModalProps) {
   const [users, setUsers] = useState<User[]>([]);
+  const [assignedUsers, setAssignedUsers] = useState<User[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(true);
@@ -40,10 +41,28 @@ export default function ShareGenerationModal({
   const fetchUsers = async () => {
     try {
       setFetchingUsers(true);
-      const response = await fetch('/api/users/list');
+
+      // For prompt types, use the dedicated endpoint that returns available/assigned users
+      const isPromptType = ['image-to-prompt', 'image-generation-prompt', 'keyword-search-prompt'].includes(generationType);
+
+      let endpoint = '/api/users/list';
+      if (isPromptType) {
+        endpoint = `/api/${generationType}/${generationId}/users`;
+      }
+
+      const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+
+        if (isPromptType) {
+          // The prompt endpoints return { availableUsers, assignedUsers }
+          setUsers(data.availableUsers || []);
+          setAssignedUsers(data.assignedUsers || []);
+        } else {
+          // Other types just return users list
+          setUsers(data);
+          setAssignedUsers([]);
+        }
       } else {
         toast.error('Failed to fetch users');
       }
@@ -136,12 +155,54 @@ export default function ShareGenerationModal({
           Share <span className="font-semibold">{generationName}</span> with other users in your team
         </p>
 
+        {/* Assigned Users Section */}
+        {assignedUsers.length > 0 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-600" />
+              Already Assigned ({assignedUsers.length})
+            </h4>
+            <div className="space-y-2 max-h-32 overflow-y-auto bg-gray-50 rounded-lg p-3">
+              {assignedUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200"
+                >
+                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 text-sm truncate">{user.name}</p>
+                      {user.role === 'ADMIN' && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Available Users Section */}
+        {assignedUsers.length > 0 && (
+          <h4 className="text-sm font-semibold text-gray-900 mb-2">
+            Available Users
+          </h4>
+        )}
+
         {fetchingUsers ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : users.length === 0 ? (
-          <p className="text-sm text-gray-500 py-8 text-center">No users available</p>
+          <p className="text-sm text-gray-500 py-8 text-center">
+            {assignedUsers.length > 0
+              ? 'All users already have access to this prompt'
+              : 'No users available'}
+          </p>
         ) : (
           <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
             {users.map((user) => (
