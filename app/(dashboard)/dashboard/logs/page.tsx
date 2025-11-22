@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RefreshCw, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import Pagination from '@/components/Pagination';
 
 interface SystemLog {
   id: string;
@@ -28,9 +29,15 @@ export default function SystemLogsPage() {
     module: '',
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 20;
+
   useEffect(() => {
     fetchLogs();
-  }, [filter]);
+  }, [filter, currentPage]);
 
   useEffect(() => {
     // Auto-refresh every 10 seconds
@@ -39,7 +46,7 @@ export default function SystemLogsPage() {
     }, 10000);
 
     return () => clearInterval(refreshInterval);
-  }, [filter]);
+  }, [filter, currentPage]);
 
   const fetchLogs = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -47,10 +54,14 @@ export default function SystemLogsPage() {
       const params = new URLSearchParams();
       if (filter.level) params.append('level', filter.level);
       if (filter.module) params.append('module', filter.module);
+      params.append('page', currentPage.toString());
+      params.append('limit', itemsPerPage.toString());
 
       const response = await fetch(`/api/logs?${params.toString()}`);
       const data = await response.json();
-      setLogs(data);
+      setLogs(data.data);
+      setTotalPages(data.pagination.totalPages);
+      setTotalCount(data.pagination.totalCount);
     } catch (error) {
       console.error('Error fetching logs:', error);
     } finally {
@@ -76,6 +87,15 @@ export default function SystemLogsPage() {
 
   const toggleExpand = (id: string) => {
     setExpandedLog(expandedLog === id ? null : id);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleFilterChange = (newFilter: { level: string; module: string }) => {
+    setFilter(newFilter);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   if (loading) {
@@ -111,7 +131,7 @@ export default function SystemLogsPage() {
           <Filter className="w-5 h-5 text-gray-500" />
           <select
             value={filter.level}
-            onChange={(e) => setFilter({ ...filter, level: e.target.value })}
+            onChange={(e) => handleFilterChange({ ...filter, level: e.target.value })}
             className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
           >
             <option value="">All Levels</option>
@@ -122,7 +142,7 @@ export default function SystemLogsPage() {
           </select>
           <select
             value={filter.module}
-            onChange={(e) => setFilter({ ...filter, module: e.target.value })}
+            onChange={(e) => handleFilterChange({ ...filter, module: e.target.value })}
             className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
           >
             <option value="">All Modules</option>
@@ -241,6 +261,18 @@ export default function SystemLogsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Pagination */}
+      {logs.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalCount}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          className="mt-6"
+        />
       )}
     </div>
   );
