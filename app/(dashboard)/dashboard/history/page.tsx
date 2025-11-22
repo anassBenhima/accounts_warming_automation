@@ -22,6 +22,7 @@ import RegenerateModal from "@/components/RegenerateModal";
 import UserFilter from "@/components/UserFilter";
 import ShareGenerationModal from "@/components/ShareGenerationModal";
 import ImagePreviewModal from "@/components/ImagePreviewModal";
+import Pagination from "@/components/Pagination";
 
 interface GeneratedImage {
   id: string;
@@ -108,6 +109,8 @@ export default function HistoryPage() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 10;
 
   const isAdmin = session?.user?.role === 'ADMIN';
@@ -121,12 +124,6 @@ export default function HistoryPage() {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredGenerations.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedGenerations = filteredGenerations.slice(startIndex, endIndex);
-
   useEffect(() => {
     fetchGenerations();
     fetchTemplates();
@@ -137,7 +134,7 @@ export default function HistoryPage() {
     }, 10000);
 
     return () => clearInterval(refreshInterval);
-  }, []);
+  }, [currentPage]);
 
   // Handle notification redirect - show logs for specific generation
   useEffect(() => {
@@ -164,10 +161,12 @@ export default function HistoryPage() {
   const fetchGenerations = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
     try {
-      const response = await fetch("/api/generations");
+      const response = await fetch(`/api/generations?page=${currentPage}&limit=${itemsPerPage}`);
       const data = await response.json();
-      setGenerations(data);
-      setFilteredGenerations(data);
+      setGenerations(data.data);
+      setFilteredGenerations(data.data);
+      setTotalPages(data.pagination.totalPages);
+      setTotalCount(data.pagination.totalCount);
     } catch (error) {
       console.error("Error fetching generations:", error);
     } finally {
@@ -423,7 +422,7 @@ export default function HistoryPage() {
       ) : (
         <>
           <div className="space-y-3 md:space-y-4">
-            {paginatedGenerations.map((generation) => (
+            {filteredGenerations.map((generation) => (
             <div
               key={generation.id}
               id={`generation-${generation.id}`}
@@ -571,54 +570,15 @@ export default function HistoryPage() {
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
-              >
-                Previous
-              </button>
-
-              <div className="flex items-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current page
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-lg text-sm ${
-                          currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} className="px-2">...</span>;
-                  }
-                  return null;
-                })}
-              </div>
-
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="mt-6"
+          />
         </>
       )}
 

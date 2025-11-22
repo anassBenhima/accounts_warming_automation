@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { processGeneration } from '@/lib/services/generationService';
 import { createUserLogger } from '@/lib/logger';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -15,16 +15,30 @@ export async function GET() {
     const logger = createUserLogger(session.user.id);
     const isAdmin = session.user.role === 'ADMIN';
 
+    // Get pagination parameters from URL
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    const where = isAdmin ? {} : { userId: session.user.id };
+
+    // Get total count for pagination
+    const totalCount = await prisma.generation.count({ where });
+
     const generations = await logger.track(
       {
         module: 'GENERATION',
         action: 'list',
         message: 'Fetching generations for user',
+        input: { page, limit },
       },
       async () => {
         return await prisma.generation.findMany({
-          where: isAdmin ? {} : { userId: session.user.id }, // Admins see all, users see own
+          where,
           orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
           select: {
             id: true,
             userId: true,
@@ -64,7 +78,15 @@ export async function GET() {
       }
     );
 
-    return NextResponse.json(generations);
+    return NextResponse.json({
+      data: generations,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching generations:', error);
     return NextResponse.json(
