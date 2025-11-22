@@ -4,6 +4,7 @@ import { createUserLogger } from "@/lib/logger";
 import { sendPushNotification } from "@/lib/pushNotification";
 import { fal } from "@fal-ai/client";
 import { downloadAndSaveImage } from "@/lib/utils/imageDownloader";
+import { addCameraExifData, addPinterestMetadata } from "@/lib/utils/exifUtils";
 
 interface BulkGenerationRow {
   id: string;
@@ -281,6 +282,17 @@ async function processRow(
         try {
           localImagePath = await downloadAndSaveImage(imageUrl, `generated/bulk/${bulkGenerationId}`);
           console.log(`Image downloaded and saved locally: ${localImagePath}`);
+
+          // Add Pinterest metadata and camera EXIF data to the downloaded image
+          if (localImagePath) {
+            await addPinterestMetadata(localImagePath, {
+              title: pinData.title,
+              description: pinData.description,
+              keywords: pinData.keywords,
+            });
+
+            await addCameraExifData(localImagePath);
+          }
         } catch (downloadError) {
           console.error(`Failed to download image for pin ${i + 1}:`, downloadError);
           // Continue anyway - we still have the API URL
