@@ -15,8 +15,23 @@ export async function GET(request: NextRequest) {
 
     const isAdmin = session.user.role === 'ADMIN';
 
+    // Get pagination parameters from URL
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+
+    // Calculate skip
+    const skip = (page - 1) * limit;
+
+    // Define where clause
+    const where = isAdmin ? {} : { userId: session.user.id }; // Admins see all, users see own
+
+    // Get total count
+    const totalCount = await prisma.bulkGeneration.count({ where });
+
+    // Get paginated data
     const bulkGenerations = await prisma.bulkGeneration.findMany({
-      where: isAdmin ? {} : { userId: session.user.id }, // Admins see all, users see own
+      where,
       include: {
         rows: {
           include: {
@@ -34,9 +49,20 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
     });
 
-    return NextResponse.json(bulkGenerations);
+    // Return paginated response
+    return NextResponse.json({
+      data: bulkGenerations,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching bulk generations:', error);
     return NextResponse.json(
@@ -100,6 +126,7 @@ export async function POST(request: NextRequest) {
             description: row.description || null,
             altText: row.altText || null,
             quantity: row.quantity,
+            publishDate: row.publishDate || null,
             status: 'PENDING',
           })),
         },

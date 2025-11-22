@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { Eye, Trash2, Loader2, RefreshCw, Users } from 'lucide-react';
 import UserFilter from '@/components/UserFilter';
 import ShareGenerationModal from '@/components/ShareGenerationModal';
+import Pagination from '@/components/Pagination';
 
 interface BulkGeneration {
   id: string;
@@ -38,41 +39,28 @@ export default function BulkHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [bulkGenerations, setBulkGenerations] = useState<BulkGeneration[]>([]);
-  const [filteredBulkGenerations, setFilteredBulkGenerations] = useState<BulkGeneration[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareBulkGeneration, setShareBulkGeneration] = useState<BulkGeneration | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [itemsPerPage] = useState(10);
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
-  const handleFilterChange = (userId: string | null) => {
-    if (!userId) {
-      setFilteredBulkGenerations(bulkGenerations);
-    } else {
-      setFilteredBulkGenerations(bulkGenerations.filter((bulkGen) => bulkGen.user?.id === userId));
-    }
-    setCurrentPage(1); // Reset to first page when filter changes
-  };
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredBulkGenerations.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedBulkGenerations = filteredBulkGenerations.slice(startIndex, endIndex);
-
   useEffect(() => {
     fetchBulkGenerations();
-  }, []);
+  }, [currentPage]);
 
   const fetchBulkGenerations = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
     try {
-      const response = await fetch('/api/bulk-generations');
+      const response = await fetch(`/api/bulk-generations?page=${currentPage}&limit=${itemsPerPage}`);
       if (response.ok) {
         const data = await response.json();
-        setBulkGenerations(data);
-        setFilteredBulkGenerations(data);
+        setBulkGenerations(data.data);
+        setTotalPages(data.pagination.totalPages);
+        setTotalCount(data.pagination.totalCount);
       } else {
         toast.error('Failed to fetch bulk generations');
       }
@@ -189,28 +177,22 @@ export default function BulkHistoryPage() {
         </div>
       </div>
 
-      <UserFilter onFilterChange={handleFilterChange} />
-
-      {filteredBulkGenerations.length === 0 ? (
+      {bulkGenerations.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-sm md:text-base text-gray-900 mb-4">
-            {bulkGenerations.length === 0
-              ? "No bulk generations yet"
-              : "No bulk generations found for the selected filter"}
+            No bulk generations yet
           </p>
-          {bulkGenerations.length === 0 && (
-            <button
-              onClick={() => router.push('/dashboard/bulk-generation')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
-            >
-              Create Your First Bulk Generation
-            </button>
-          )}
+          <button
+            onClick={() => router.push('/dashboard/bulk-generation')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
+          >
+            Create Your First Bulk Generation
+          </button>
         </div>
       ) : (
         <>
           <div className="space-y-4">
-            {paginatedBulkGenerations.map((bulkGen) => (
+            {bulkGenerations.map((bulkGen) => (
             <div
               key={bulkGen.id}
               className="border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow"
@@ -329,54 +311,14 @@ export default function BulkHistoryPage() {
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
-              >
-                Previous
-              </button>
-
-              <div className="flex items-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current page
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-lg text-sm ${
-                          currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} className="px-2">...</span>;
-                  }
-                  return null;
-                })}
-              </div>
-
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 text-sm"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="mt-6"
+          />
         </>
       )}
 
