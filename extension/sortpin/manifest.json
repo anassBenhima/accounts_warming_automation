@@ -1,0 +1,144 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "name": "Pinterest sort extension - SortPin.com",
+  "description": "The Easiest Way to Sort Your Pinterest Pins Automatically!",
+  "version": "2.0.3",
+  "manifest_version": 3,
+  "icons": {
+    "16": "img/icon-16.png",
+    "32": "img/icon-32.png",
+    "96": "img/icon-96.png",
+    "128": "img/icon-128.png",
+    "196": "img/icon-196.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "img/icon-196.png"
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/content-script-loader.chunk-8e9e177b.bef21970.js",
+        "assets/content-script-loader.chunk-a12aeead.620421dc.js"
+      ],
+      "matches": [
+        "*://*.pinterest.at/*",
+        "*://*.pinterest.ca/*",
+        "*://*.pinterest.ch/*",
+        "*://*.pinterest.co.in/*",
+        "*://*.pinterest.co.kr/*",
+        "*://*.pinterest.co.nz/*",
+        "*://*.pinterest.co.uk/*",
+        "*://*.pinterest.com.au/*",
+        "*://*.pinterest.com.mx/*",
+        "*://*.pinterest.com/*",
+        "*://*.pinterest.cz/*",
+        "*://*.pinterest.de/*",
+        "*://*.pinterest.dk/*",
+        "*://*.pinterest.es/*",
+        "*://*.pinterest.fi/*",
+        "*://*.pinterest.fr/*",
+        "*://*.pinterest.ie/*",
+        "*://*.pinterest.it/*",
+        "*://*.pinterest.jp/*",
+        "*://*.pinterest.nl/*",
+        "*://*.pinterest.nz/*",
+        "*://*.pinterest.pt/*",
+        "*://*.pinterest.ru/*",
+        "*://*.pinterest.se/*",
+        "*://*.pinterest.cl/*",
+        "*://*.pinterest.ph/*"
+      ],
+      "css": [
+        "assets/index.js.e98d7fbd.css",
+        "assets/tailwind.dist.2f8689ae.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://*.pinterest.at/*",
+        "*://*.pinterest.ca/*",
+        "*://*.pinterest.ch/*",
+        "*://*.pinterest.cl/*",
+        "*://*.pinterest.co.in/*",
+        "*://*.pinterest.co.kr/*",
+        "*://*.pinterest.co.nz/*",
+        "*://*.pinterest.co.uk/*",
+        "*://*.pinterest.com.au/*",
+        "*://*.pinterest.com.mx/*",
+        "*://*.pinterest.com/*",
+        "*://*.pinterest.cz/*",
+        "*://*.pinterest.de/*",
+        "*://*.pinterest.dk/*",
+        "*://*.pinterest.es/*",
+        "*://*.pinterest.fi/*",
+        "*://*.pinterest.fr/*",
+        "*://*.pinterest.ie/*",
+        "*://*.pinterest.it/*",
+        "*://*.pinterest.jp/*",
+        "*://*.pinterest.nl/*",
+        "*://*.pinterest.nz/*",
+        "*://*.pinterest.ph/*",
+        "*://*.pinterest.pt/*",
+        "*://*.pinterest.ru/*",
+        "*://*.pinterest.se/*"
+      ],
+      "resources": [
+        "*"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "*://*.pinterest.at/*",
+        "*://*.pinterest.ca/*",
+        "*://*.pinterest.ch/*",
+        "*://*.pinterest.cl/*",
+        "*://*.pinterest.co.in/*",
+        "*://*.pinterest.co.kr/*",
+        "*://*.pinterest.co.nz/*",
+        "*://*.pinterest.co.uk/*",
+        "*://*.pinterest.com.au/*",
+        "*://*.pinterest.com.mx/*",
+        "*://*.pinterest.com/*",
+        "*://*.pinterest.cz/*",
+        "*://*.pinterest.de/*",
+        "*://*.pinterest.dk/*",
+        "*://*.pinterest.es/*",
+        "*://*.pinterest.fi/*",
+        "*://*.pinterest.fr/*",
+        "*://*.pinterest.ie/*",
+        "*://*.pinterest.it/*",
+        "*://*.pinterest.jp/*",
+        "*://*.pinterest.nl/*",
+        "*://*.pinterest.nz/*",
+        "*://*.pinterest.ph/*",
+        "*://*.pinterest.pt/*",
+        "*://*.pinterest.ru/*",
+        "*://*.pinterest.se/*"
+      ],
+      "resources": [
+        "assets/chunk-adf0e4e1.js",
+        "assets/chunk-02db1d94.js",
+        "assets/chunk-6fcd22a3.js",
+        "assets/chunk-4bb03027.js",
+        "assets/chunk-f82a9361.js",
+        "assets/chunk-8e9e177b.js",
+        "assets/chunk-3dca305e.js",
+        "assets/chunk-a12aeead.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ],
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ]
+}

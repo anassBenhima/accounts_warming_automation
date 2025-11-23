@@ -280,7 +280,10 @@ async function processRow(
         // Download and save the image locally
         let localImagePath: string | null = null;
         try {
-          localImagePath = await downloadAndSaveImage(imageUrl, `generated/bulk/${bulkGenerationId}`);
+          localImagePath = await downloadAndSaveImage(
+            imageUrl,
+            `generated/bulk/${bulkGenerationId}`
+          );
           console.log(`Image downloaded and saved locally: ${localImagePath}`);
 
           // Add Pinterest metadata and camera EXIF data to the downloaded image
@@ -294,7 +297,10 @@ async function processRow(
             await addCameraExifData(localImagePath);
           }
         } catch (downloadError) {
-          console.error(`Failed to download image for pin ${i + 1}:`, downloadError);
+          console.error(
+            `Failed to download image for pin ${i + 1}:`,
+            downloadError
+          );
           // Continue anyway - we still have the API URL
         }
 
@@ -774,9 +780,7 @@ async function generateImageBatch(
         model,
         prompt,
         response_format: "url",
-        width,
-        height,
-        aspect_ratio: `${width}:${height}`,
+        size: `${width}x${height}`,
         stream: false,
         watermark: false,
       };
