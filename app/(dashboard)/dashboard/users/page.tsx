@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Users, UserCheck, UserX, Shield, User as UserIcon, Edit2, X } from 'lucide-react';
+import { Users, UserCheck, UserX, Shield, User as UserIcon, Edit2, X, Lock } from 'lucide-react';
 
 interface User {
   id: string;
@@ -21,6 +21,23 @@ interface User {
   };
 }
 
+interface Module {
+  value: string;
+  label: string;
+}
+
+interface Action {
+  value: string;
+  label: string;
+}
+
+interface Permission {
+  id?: string;
+  module: string;
+  actions: string[];
+  enabled: boolean;
+}
+
 export default function UsersManagementPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -29,6 +46,14 @@ export default function UsersManagementPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', password: '' });
+
+  // Permissions management state
+  const [managingPermissionsUser, setManagingPermissionsUser] = useState<User | null>(null);
+  const [availableModules, setAvailableModules] = useState<Module[]>([]);
+  const [availableActions, setAvailableActions] = useState<Action[]>([]);
+  const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -157,6 +182,118 @@ export default function UsersManagementPage() {
     }
   };
 
+  const openPermissionsModal = async (user: User) => {
+    if (user.role === 'ADMIN') {
+      toast.error('Cannot modify permissions for admin users');
+      return;
+    }
+
+    setManagingPermissionsUser(user);
+    setLoadingPermissions(true);
+
+    try {
+      // Fetch available modules and actions
+      const modulesResponse = await fetch('/api/permissions/modules');
+      if (!modulesResponse.ok) throw new Error('Failed to fetch modules');
+      const modulesData = await modulesResponse.json();
+      setAvailableModules(modulesData.modules);
+      setAvailableActions(modulesData.actions);
+
+      // Fetch user's current permissions
+      const permissionsResponse = await fetch(`/api/permissions?userId=${user.id}`);
+      if (!permissionsResponse.ok) throw new Error('Failed to fetch user permissions');
+      const permissionsData = await permissionsResponse.json();
+
+      // Initialize permissions for all modules
+      const initialPermissions: Permission[] = modulesData.modules.map((module: Module) => {
+        const existingPerm = permissionsData.permissions.find((p: Permission) => p.module === module.value);
+        return existingPerm || {
+          module: module.value,
+          actions: [],
+          enabled: false,
+        };
+      });
+
+      setUserPermissions(initialPermissions);
+    } catch (error: any) {
+      console.error('Error loading permissions:', error);
+      toast.error(error.message || 'Failed to load permissions');
+      setManagingPermissionsUser(null);
+    } finally {
+      setLoadingPermissions(false);
+    }
+  };
+
+  const closePermissionsModal = () => {
+    setManagingPermissionsUser(null);
+    setUserPermissions([]);
+  };
+
+  const toggleModulePermission = (moduleValue: string) => {
+    setUserPermissions(prev => {
+      const perm = prev.find(p => p.module === moduleValue);
+      if (!perm) return prev;
+
+      return prev.map(p =>
+        p.module === moduleValue
+          ? { ...p, enabled: !p.enabled, actions: !p.enabled ? availableActions.map(a => a.value) : [] }
+          : p
+      );
+    });
+  };
+
+  const toggleModuleAction = (moduleValue: string, actionValue: string) => {
+    setUserPermissions(prev => {
+      return prev.map(p => {
+        if (p.module === moduleValue) {
+          const hasAction = p.actions.includes(actionValue);
+          const newActions = hasAction
+            ? p.actions.filter(a => a !== actionValue)
+            : [...p.actions, actionValue];
+
+          return {
+            ...p,
+            actions: newActions,
+            enabled: newActions.length > 0,
+          };
+        }
+        return p;
+      });
+    });
+  };
+
+  const savePermissions = async () => {
+    if (!managingPermissionsUser) return;
+
+    setSavingPermissions(true);
+    try {
+      // Only send permissions that are enabled
+      const enabledPermissions = userPermissions.filter(p => p.enabled && p.actions.length > 0);
+
+      const response = await fetch('/api/permissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: managingPermissionsUser.id,
+          permissions: enabledPermissions,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update permissions');
+      }
+
+      toast.success('Permissions updated successfully');
+      closePermissionsModal();
+    } catch (error: any) {
+      console.error('Error saving permissions:', error);
+      toast.error(error.message || 'Failed to save permissions');
+    } finally {
+      setSavingPermissions(false);
+    }
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -277,6 +414,15 @@ export default function UsersManagementPage() {
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
+                    {user.role !== 'ADMIN' && (
+                      <button
+                        onClick={() => openPermissionsModal(user)}
+                        className="text-purple-600 hover:text-purple-900"
+                        title="Manage permissions"
+                      >
+                        <Lock className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleUserStatus(user.id, user.isActive)}
                       disabled={updating === user.id || user.id === session?.user?.id}
@@ -379,6 +525,101 @@ export default function UsersManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Permissions Modal */}
+      {managingPermissionsUser && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={closePermissionsModal}
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Manage Permissions</h2>
+                <p className="text-sm text-gray-600">
+                  {managingPermissionsUser.name} ({managingPermissionsUser.email})
+                </p>
+              </div>
+              <button
+                onClick={closePermissionsModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {loadingPermissions ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-gray-500">Loading permissions...</div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {availableModules.map((module) => {
+                    const permission = userPermissions.find(p => p.module === module.value);
+                    if (!permission) return null;
+
+                    return (
+                      <div key={module.value} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={permission.enabled}
+                              onChange={() => toggleModulePermission(module.value)}
+                              className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <span className="font-medium text-gray-900">{module.label}</span>
+                          </label>
+                        </div>
+
+                        {permission.enabled && (
+                          <div className="ml-8 flex flex-wrap gap-3">
+                            {availableActions.map((action) => (
+                              <label
+                                key={action.value}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={permission.actions.includes(action.value)}
+                                  onChange={() => toggleModuleAction(module.value, action.value)}
+                                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm text-gray-700">{action.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={savePermissions}
+                    disabled={savingPermissions}
+                    className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {savingPermissions ? 'Saving...' : 'Save Permissions'}
+                  </button>
+                  <button
+                    onClick={closePermissionsModal}
+                    disabled={savingPermissions}
+                    className="flex-1 bg-gray-200 text-gray-900 py-2 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -29,44 +29,45 @@ import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import NotificationToggle from '@/components/NotificationToggle';
 import SessionErrorHandler from '@/components/SessionErrorHandler';
+import { useAccessibleModules } from '@/lib/hooks/usePermissions';
 
 const navigationGroups = [
   {
     name: 'Generation',
     items: [
-      { name: 'Quick Generation', href: '/dashboard/quick-generation', icon: Zap },
-      { name: 'New Generation', href: '/dashboard/new-generation', icon: Play },
-      { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers },
+      { name: 'Quick Generation', href: '/dashboard/quick-generation', icon: Zap, module: 'QUICK_GENERATION' },
+      { name: 'New Generation', href: '/dashboard/new-generation', icon: Play, module: 'NEW_GENERATION' },
+      { name: 'Bulk Generation', href: '/dashboard/bulk-generation', icon: Layers, module: 'BULK_GENERATION' },
     ],
   },
   {
     name: 'History',
     items: [
-      { name: 'History', href: '/dashboard/history', icon: History },
-      { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive },
+      { name: 'History', href: '/dashboard/history', icon: History, module: 'HISTORY' },
+      { name: 'Bulk History', href: '/dashboard/bulk-history', icon: Archive, module: 'BULK_HISTORY' },
     ],
   },
   {
     name: 'Prompts',
     items: [
-      { name: 'Image to Prompt', href: '/dashboard/image-to-prompt', icon: FileText },
-      { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon },
-      { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search },
+      { name: 'Image to Prompt', href: '/dashboard/image-to-prompt', icon: FileText, module: 'IMAGE_TO_PROMPT' },
+      { name: 'Image Generation', href: '/dashboard/image-generation', icon: ImageIcon, module: 'IMAGE_GENERATION' },
+      { name: 'Keyword Search', href: '/dashboard/keyword-search', icon: Search, module: 'KEYWORD_SEARCH' },
     ],
   },
   {
     name: 'Configuration',
     items: [
-      { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
-      { name: 'Templates', href: '/dashboard/templates', icon: Palette },
-      { name: 'HTML Templates', href: '/dashboard/html-templates', icon: Code },
+      { name: 'API Keys', href: '/dashboard/api-keys', icon: Key, module: 'API_KEYS' },
+      { name: 'Templates', href: '/dashboard/templates', icon: Palette, module: 'TEMPLATES' },
+      { name: 'HTML Templates', href: '/dashboard/html-templates', icon: Code, module: 'HTML_TEMPLATES' },
     ],
   },
   {
     name: 'System',
     items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'System Logs', href: '/dashboard/logs', icon: LogsIcon },
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }, // Dashboard is always accessible
+      { name: 'System Logs', href: '/dashboard/logs', icon: LogsIcon, module: 'SYSTEM_LOGS' },
     ],
   },
 ];
@@ -77,6 +78,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showProfilePopover, setShowProfilePopover] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>(['Generation']);
+  const accessibleModules = useAccessibleModules();
 
   const toggleGroup = (groupName: string) => {
     setOpenGroups(prev =>
@@ -89,6 +91,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isGroupActive = (items: { href: string }[]) => {
     return items.some(item => pathname === item.href);
   };
+
+  // Filter navigation groups based on user permissions
+  const filteredNavigationGroups = navigationGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item =>
+      // Always show items without module restriction (like Dashboard)
+      !item.module ||
+      // Show items if user has access to the module
+      accessibleModules.includes(item.module)
+    ),
+  })).filter(group => group.items.length > 0); // Remove empty groups
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,7 +218,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* Navigation */}
           <nav className="flex-1 p-3 md:p-4 space-y-2 overflow-y-auto">
-            {navigationGroups.map((group) => {
+            {filteredNavigationGroups.map((group) => {
               const isOpen = openGroups.includes(group.name);
               const hasActiveItem = isGroupActive(group.items);
 
