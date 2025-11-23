@@ -52,6 +52,7 @@ interface Row {
   description: string;
   altText: string;
   publishDate: string;
+  pinterestBoard: string;
 }
 
 // Helper function to get current datetime in YYYY-MM-DDTHH:mm format
@@ -79,7 +80,7 @@ export default function BulkGenerationPage() {
   const [imageWidth, setImageWidth] = useState(1000);
   const [imageHeight, setImageHeight] = useState(1500);
   const [rows, setRows] = useState<Row[]>([
-    { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate() },
+    { id: '1', keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate(), pinterestBoard: '' },
   ]);
   const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -167,7 +168,7 @@ export default function BulkGenerationPage() {
   const addRow = () => {
     setRows([
       ...rows,
-      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate() },
+      { id: Date.now().toString(), keywords: '', imageUrl: '', quantity: 1, title: '', description: '', altText: '', publishDate: getTodayDate(), pinterestBoard: '' },
     ]);
   };
 
@@ -276,6 +277,8 @@ export default function BulkGenerationPage() {
             title: row.title.trim() || null,
             description: row.description.trim() || null,
             altText: row.altText.trim() || null,
+            publishDate: row.publishDate.trim() || null,
+            pinterestBoard: row.pinterestBoard.trim() || null,
           })),
         }),
       });
@@ -636,6 +639,7 @@ export default function BulkGenerationPage() {
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Title</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Description</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Alt Text</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Pinterest Board</th>
                   <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-medium text-gray-900">Publish Date</th>
                   <th className="px-2 md:px-4 py-3 text-center text-xs md:text-sm font-medium text-gray-900">Actions</th>
                 </tr>
@@ -708,6 +712,17 @@ export default function BulkGenerationPage() {
                         rows={3}
                         className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
                         placeholder="Alt text"
+                      />
+                    </td>
+                    <td className="px-2 md:px-4 py-3">
+                      <input
+                        type="text"
+                        value={row.pinterestBoard}
+                        onChange={(e) =>
+                          updateRow(row.id, 'pinterestBoard', e.target.value)
+                        }
+                        className="w-full px-2 md:px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-gray-900 text-xs md:text-sm"
+                        placeholder="Board/Section"
                       />
                     </td>
                     <td className="px-2 md:px-4 py-3">

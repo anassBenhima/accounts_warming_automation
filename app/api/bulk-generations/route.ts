@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
             altText: row.altText || null,
             quantity: row.quantity,
             publishDate: row.publishDate || null,
+            pinterestBoard: row.pinterestBoard || null,
             status: 'PENDING',
           })),
         },

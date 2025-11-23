@@ -12,6 +12,8 @@ interface ApiResponseCardProps {
     description?: string;
     altText?: string;
     keywords?: string;
+    publishDate?: string;
+    pinterestBoard?: string;
   };
   onRegenerateClick?: () => void;
 }
@@ -177,6 +179,18 @@ export default function ApiResponseCard({ title, apiResponses, uploadedImageUrl,
                   <div>
                     <span className="font-medium text-yellow-900">Keywords:</span>
                     <span className="text-yellow-800 ml-2">{userInputs.keywords}</span>
+                  </div>
+                )}
+                {userInputs.publishDate && (
+                  <div>
+                    <span className="font-medium text-yellow-900">Publish Date:</span>
+                    <span className="text-yellow-800 ml-2">{userInputs.publishDate}</span>
+                  </div>
+                )}
+                {userInputs.pinterestBoard && (
+                  <div>
+                    <span className="font-medium text-yellow-900">Pinterest Board:</span>
+                    <span className="text-yellow-800 ml-2">{userInputs.pinterestBoard}</span>
                   </div>
                 )}
               </div>

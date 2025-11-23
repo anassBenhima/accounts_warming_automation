@@ -173,7 +173,7 @@ export default function BulkHistoryDetailPage() {
 
     // CSV with column headers only (no title row)
     const csvData = [
-      ['Title', 'Description', 'Keywords', 'Image URL', 'Alt Text', 'Published date'],
+      ['Title', 'Description', 'Keywords', 'Image URL', 'Alt Text', 'Pinterest Board', 'Published date'],
     ];
 
     // Escape CSV values (handle commas and quotes)
@@ -197,8 +197,9 @@ export default function BulkHistoryDetailPage() {
           ? `${window.location.origin}${pin.localImagePath}`
           : pin.imageUrl;
 
-        // Get publishDate from row data (Pinterest format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+        // Get publishDate and pinterestBoard from row data
         const publishDate = (row as any).publishDate || '';
+        const pinterestBoard = (row as any).pinterestBoard || '';
 
         csvData.push([
           escapeCSV(truncate(pin.title, 100)), // Title max 100 chars
@@ -206,6 +207,7 @@ export default function BulkHistoryDetailPage() {
           escapeCSV(pin.keywords.join(', ')),
           escapeCSV(imageUrl),
           escapeCSV((pin as any).altText || pin.title),
+          escapeCSV(pinterestBoard),
           escapeCSV(publishDate),
         ]);
       });
@@ -584,6 +586,8 @@ export default function BulkHistoryDetailPage() {
                     description: row.description || undefined,
                     altText: row.altText || undefined,
                     keywords: row.keywords,
+                    publishDate: row.publishDate || undefined,
+                    pinterestBoard: row.pinterestBoard || undefined,
                   }}
                   onRegenerateClick={() => {
                     setRegenerateRow(row);
