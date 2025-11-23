@@ -84,6 +84,17 @@ export default function BulkHistoryDetailPage() {
     fetchBulkGeneration();
   }, [id]);
 
+  // Auto-refresh every 5 seconds while processing
+  useEffect(() => {
+    if (bulkGeneration && bulkGeneration.status === 'PROCESSING') {
+      const interval = setInterval(() => {
+        fetchBulkGeneration();
+      }, 5000); // Refresh every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [bulkGeneration?.status]);
+
   const fetchBulkGeneration = async () => {
     try {
       const response = await fetch(`/api/bulk-generations/${id}`);
