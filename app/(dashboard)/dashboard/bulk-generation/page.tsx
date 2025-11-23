@@ -54,10 +54,15 @@ interface Row {
   publishDate: string;
 }
 
-// Helper function to get today's date in YYYY-MM-DD format
+// Helper function to get current datetime in YYYY-MM-DDTHH:mm format
 const getTodayDate = () => {
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const hours = String(today.getHours()).padStart(2, '0');
+  const minutes = String(today.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 export default function BulkGenerationPage() {
@@ -707,7 +712,7 @@ export default function BulkGenerationPage() {
                     </td>
                     <td className="px-2 md:px-4 py-3">
                       <input
-                        type="date"
+                        type="datetime-local"
                         value={row.publishDate}
                         onChange={(e) =>
                           updateRow(row.id, 'publishDate', e.target.value)

@@ -292,8 +292,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           {/* Notification Toggle */}
           <NotificationToggle />
 
-          {/* Profile Section */}
-          <div className="p-3 md:p-4 border-t border-gray-200 relative">
+          {/* Profile Section - Mobile Only */}
+          <div className="lg:hidden p-3 md:p-4 border-t border-gray-200 relative">
             <button
               onClick={() => setShowProfilePopover(!showProfilePopover)}
               className="flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-all w-full text-sm md:text-base"
@@ -345,8 +345,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Logout */}
-          <div className="p-3 md:p-4 border-t border-gray-200">
+          {/* Logout - Mobile Only */}
+          <div className="lg:hidden p-3 md:p-4 border-t border-gray-200">
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all w-full text-sm md:text-base"
